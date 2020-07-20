@@ -51,7 +51,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - 8000:80
+      # external port:container port
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - static:/opt/services/djangoapp/static
