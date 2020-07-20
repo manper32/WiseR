@@ -85,14 +85,14 @@ DATABASES = {
         'HOST': 'database1',
         'PORT': '5432',
     },
-    'database2': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'database2',
-        'USER': 'database2_role',
-        'PASSWORD': 'database2_password',
-        'HOST': 'database2',
-        'PORT': '5432',
-    }
+    # 'database2': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'database2',
+    #     'USER': 'database2_role',
+    #     'PASSWORD': 'database2_password',
+    #     'HOST': 'database2',
+    #     'PORT': '5432',
+    # }
 }
 
 

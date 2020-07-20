@@ -22,14 +22,14 @@ services:
     networks:
       - database1_network
 
-  database2:
-    image: postgres:10
-    volumes:
-      - database2_volume:/var/lib/postgresql/data
-    env_file:
-      - config/db/database2_env
-    networks:
-      - database2_network
+  # database2:
+  #   image: postgres
+  #   volumes:
+  #     - database2_volume:/var/lib/postgresql/data
+  #   env_file:
+  #     - config/db/database2_env
+  #   networks:
+  #     - database2_network
 
   # web container, with django + gunicorn
   djangoapp:
@@ -42,11 +42,11 @@ services:
       - media:/opt/services/djangoapp/media
     networks:
       - database1_network
-      - database2_network
+      # - database2_network
       - nginx_network
     depends_on:
       - database1
-      - database2
+      # - database2
 
   # reverse proxy container (nginx)
   nginx:
@@ -65,13 +65,13 @@ services:
 networks:
   database1_network:
     driver: bridge
-  database2_network:
-    driver: bridge
+  # database2_network:
+  #   driver: bridge
   nginx_network:
     driver: bridge
 
 volumes:
   database1_volume:
-  database2_volume:
+  # database2_volume:
   static:
   media:
