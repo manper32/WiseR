@@ -20,14 +20,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '4d!2@*cmd5)xz$s#jt9xt8dcox2om!78a^=+wy!dyyf)9b!lkj'
+# SECRET_KEY = '4d!2@*cmd5)xz$s#jt9xt8dcox2om!78a^=+wy!dyyf)9b!lkj'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY','o*aml0bbo#h(p(btb8*5m$k)k)0^63_4=8d0!@+ph072$2c6vo')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = bool( os.environ.get('DJANGO_DEBUG', True) )
 
 ALLOWED_HOSTS = [
     'testserver',
-    'localhost'
+    'localhost',
+    'cbpodev.com'
 ]
 
 
@@ -77,6 +80,11 @@ WSGI_APPLICATION = 'hello.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
+
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    #         }
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'database1',
@@ -85,14 +93,14 @@ DATABASES = {
         'HOST': 'database1',
         'PORT': '5432',
     },
-    # 'database2': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': 'database2',
-    #     'USER': 'database2_role',
-    #     'PASSWORD': 'database2_password',
-    #     'HOST': 'database2',
-    #     'PORT': '5432',
-    # }
+    'database2': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'database2',
+        'USER': 'database2_role',
+        'PASSWORD': 'database2_password',
+        'HOST': 'database2',
+        'PORT': '5432',
+    }
 }
 
 

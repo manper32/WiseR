@@ -1,0 +1,439 @@
+WITH cons_baseunicos AS (
+SELECT
+	DISTINCT oa.obligacion_id,
+	o.deudor_id
+FROM
+	cbpo_claro.obligaciones_asignacion AS oa
+INNER JOIN cbpo_claro.obligaciones AS o ON
+	o.obligacion_id = oa.obligacion_id
+WHERE
+	oa.asignacion_id = (
+	SELECT
+		a.asignacion_id
+	FROM
+		cbpo_claro.asignaciones AS a
+	WHERE
+		a.estado IS TRUE)),
+cons_mejorgestionactual AS (
+SELECT
+	DISTINCT m.*,
+	i.contactability
+FROM
+	cons_baseunicos AS bu
+LEFT JOIN cbpo_claro.mejor_gestion AS m ON
+	m.deudor_id = bu.deudor_id
+INNER JOIN bi_snap.management_indicators AS i ON
+	i.indicator_desc = RTRIM(LTRIM(m.indicador))
+WHERE
+	m.anio = EXTRACT (YEAR
+FROM
+	CURRENT_DATE)
+	AND m.mes = EXTRACT (MONTH
+FROM
+	CURRENT_DATE)),
+cons_mejorgestion1ant AS (
+SELECT
+	DISTINCT m.deudor_id,
+	m.indicador
+FROM
+	cons_baseunicos AS bu
+LEFT JOIN cbpo_claro.mejor_gestion AS m ON
+	m.deudor_id = bu.deudor_id
+WHERE
+	m.anio = EXTRACT (YEAR
+FROM
+	CURRENT_DATE)
+	AND m.mes = EXTRACT (MONTH
+FROM
+	CURRENT_DATE)-1),
+cons_mejorgestion2ant AS (
+SELECT
+	DISTINCT m.deudor_id,
+	m.indicador
+FROM
+	cons_baseunicos AS bu
+LEFT JOIN cbpo_claro.mejor_gestion AS m ON
+	m.deudor_id = bu.deudor_id
+WHERE
+	m.anio = EXTRACT (YEAR
+FROM
+	CURRENT_DATE)
+	AND m.mes = EXTRACT (MONTH
+FROM
+	CURRENT_DATE)-2),
+cons_mejorgestion3ant AS (
+SELECT
+	DISTINCT m.deudor_id,
+	m.indicador
+FROM
+	cons_baseunicos AS bu
+LEFT JOIN cbpo_claro.mejor_gestion AS m ON
+	m.deudor_id = bu.deudor_id
+WHERE
+	m.anio = EXTRACT (YEAR
+FROM
+	CURRENT_DATE)
+	AND m.mes = EXTRACT (MONTH
+FROM
+	CURRENT_DATE)-3),
+cons_mejorgestion4ant AS (
+SELECT
+	DISTINCT m.deudor_id,
+	m.indicador
+FROM
+	cons_baseunicos AS bu
+LEFT JOIN cbpo_claro.mejor_gestion AS m ON
+	m.deudor_id = bu.deudor_id
+WHERE
+	m.anio = EXTRACT (YEAR
+FROM
+	CURRENT_DATE)
+	AND m.mes = EXTRACT (MONTH
+FROM
+	CURRENT_DATE)-4),
+cons_mejorgestioncons AS (
+SELECT
+	DISTINCT b.obligacion_id,
+	b.deudor_id,
+	mga.mes,
+	mga.anio,
+	mga.indicador,
+	CASE WHEN mga.repeticion IS NULL THEN 0
+	ELSE mga.repeticion END AS repeticion_,
+	CASE WHEN mga.llamadas IS NULL THEN 0
+	ELSE mga.llamadas END AS llamadas_,
+	CASE WHEN mga.sms IS NULL THEN 0
+	ELSE mga.sms END AS sms_,
+	CASE WHEN mga.correos IS NULL THEN 0
+	ELSE mga.correos END AS correos_,
+	CASE WHEN mga.gescall IS NULL THEN 0
+	ELSE mga.gescall END AS gescall_,
+	CASE WHEN mga.whatsapp IS NULL THEN 0
+	ELSE mga.whatsapp END AS whatsapp_,
+	CASE WHEN mga.no_contacto IS NULL THEN 0
+	ELSE mga.no_contacto END AS no_contacto_,
+	mga.fecha_gestion,
+	mga.visitas,
+	mga.phone,
+	mga.asesor,
+	mga.fecha_primer_gestion,
+	mga.fecha_ultima_gestion,
+	mg1.indicador AS indicador_m1,
+	mg2.indicador AS indicador_m2,
+	mg3.indicador AS indicador_m3,
+	mg4.indicador AS indicador_m4,
+	CASE WHEN mga.contactability = 0 THEN 'No contacto'
+	ELSE 'Contacto' END contactabilidad,
+	md.indicador AS indicador_hoy,
+	md.fecha_gestion AS fec_gestion_hoy,
+	md.phone AS telefono_hoy,
+	md.asesor AS asesor_hoy
+FROM
+	cons_baseunicos AS b
+LEFT JOIN cons_mejorgestionactual AS mga ON
+	mga.deudor_id = b.deudor_id
+LEFT JOIN cons_mejorgestion1ant AS mg1 ON
+	mg1.deudor_id = b.deudor_id
+LEFT JOIN cons_mejorgestion2ant AS mg2 ON
+	mg2.deudor_id = b.deudor_id
+LEFT JOIN cons_mejorgestion3ant AS mg3 ON
+	mg3.deudor_id = b.deudor_id
+LEFT JOIN cons_mejorgestion4ant AS mg4 ON
+	mg4.deudor_id = b.deudor_id
+LEFT JOIN cbpo_claro.mejor_gestion_dia AS md ON
+	md.deudor_id = b.deudor_id),
+cons_baseasignacion AS (
+SELECT
+	DISTINCT ca.fecha_registro,
+	ca.deudor_id,
+	ca.obligacion_id,
+	ca.crmorigen,
+	ca.potencialmark,
+	ca.prepotencialmark,
+	ca.writeoffmark,
+	ca.valorscoring,
+	ca.numeroreferenciadepago,
+	ca.estado,
+	ca.nombredelcliente,
+	ca.montoinicial,
+	ca.modinitcta,
+	ca.deudarealcuenta,
+	CASE WHEN ca.prepotencialmark = 'Y' THEN
+	CASE WHEN ca.crmorigen = 'ASCARD' THEN 'Preprovision'
+	WHEN ca.crmorigen = 'RR' THEN 'Prechurn'
+	WHEN ca.crmorigen = 'BSCS' THEN 'Prepotencial' END
+	WHEN ca.potencialmark = 'Y' THEN
+	CASE WHEN ca.crmorigen = 'ASCARD' THEN 'provision'
+	WHEN ca.crmorigen = 'RR' THEN 'churn'
+	WHEN ca.crmorigen = 'BSCS' THEN 'potencial' END
+	WHEN ca.potencialmark = 'N'
+	AND ca.prepotencialmark = 'N'
+	AND ca.writeoffmark = 'N'
+	AND ca.debtageinicial = '0' THEN
+	CASE WHEN ca.valorscoring >= '60' THEN 'pp'
+	WHEN ca.valorscoring <'60' THEN 'flp' END
+	WHEN ca.potencialmark = 'Y' THEN 'Potencial'
+	WHEN ca.writeoffmark = 'Y' THEN 'Castigo'
+	WHEN ca.debtageinicial = '30' THEN '30'
+	WHEN ca.debtageinicial = '60' THEN '60'
+	WHEN ca.debtageinicial = '90' THEN '90'
+	WHEN ca.debtageinicial = '120' THEN '120'
+	WHEN ca.debtageinicial = '150' THEN '150'
+	WHEN ca.debtageinicial = '180' THEN '180'
+	WHEN ca.debtageinicial = '210' THEN '210' END AS segmento_bpo
+FROM
+	cbpo_claro.cons_asignacion AS ca
+WHERE
+	fecha_registro = (
+	SELECT
+		MAX(fecha_registro)
+	FROM
+		cbpo_claro.cons_asignacion)),
+cons_comovamos_01 AS (
+SELECT
+	DISTINCT ba.deudor_id,
+	ba.obligacion_id,
+	ba.crmorigen,
+	ba.potencialmark,
+	ba.prepotencialmark,
+	ba.writeoffmark,
+	ba.valorscoring,
+	ba.numeroreferenciadepago,
+	ba.estado,
+	ba.nombredelcliente,
+	ROUND(ba.montoinicial::NUMERIC) AS montoinicial_,
+	ROUND(ba.modinitcta::NUMERIC) AS modinitcta_,
+	ROUND(ba.deudarealcuenta::NUMERIC) AS deudarealcuenta_,
+	ba.segmento_bpo,
+	cm.indicador_hoy,
+	cm.fec_gestion_hoy,
+	cm.telefono_hoy,
+	cm.asesor_hoy,
+	cm.mes AS mes_actual,
+	cm.anio AS anio_actual,
+	cm.indicador AS indicador_mes_actual,
+	cm.repeticion_ AS repeticion_mes_actual,
+	cm.llamadas_ AS llamadas_mes_actual,
+	cm.sms_ AS sms_mes_actual,
+	cm.correos_ AS correos_mes_actual,
+	cm.gescall_ AS gescall_mes_actual,
+	cm.whatsapp_ AS whatsapp_mes_actual,
+	cm.no_contacto_ AS no_contacto_mes_actual,
+	(llamadas_ + sms_ + correos_ + gescall_ + whatsapp_ + no_contacto_) AS total_ges_mes_actual,
+	cm.fecha_gestion,
+	cm.visitas,
+	cm.phone,
+	cm.asesor,
+	cm.fecha_primer_gestion,
+	cm.fecha_ultima_gestion,
+	cm.indicador_m1,
+	cm.indicador_m2,
+	cm.indicador_m3,
+	cm.indicador_m4,
+	t.tipo_cliente,
+	u.unico,
+	cm.contactabilidad
+FROM
+	cons_baseasignacion AS ba
+LEFT JOIN cons_mejorgestioncons AS cm ON
+	cm.deudor_id = ba.deudor_id
+INNER JOIN cbpo_claro.tipo_cliente AS t ON
+	t.deudor_id = ba.deudor_id
+LEFT JOIN cbpo_claro.unicos AS u ON
+	u.obligacion_id = ba.obligacion_id),
+cons_comovamos_02 AS (
+SELECT
+	cm.*,
+	CASE WHEN d.descuento IS NULL
+	OR ec.obligacion_id IS NOT NULL THEN '% 0'
+	ELSE '% ' || d.descuento END AS porcentaje_descuento,
+	CASE WHEN d.descuento IS NULL
+	OR ec.obligacion_id IS NOT NULL THEN 0
+	ELSE ROUND(((d.descuento * cm.modinitcta_)/ 100)) END AS valor_descuento,
+	CASE WHEN d.descuento IS NULL
+	OR ec.obligacion_id IS NOT NULL THEN ROUND(cm.modinitcta_)
+	ELSE ROUND((cm.modinitcta_ - ((d.descuento * cm.modinitcta_)/ 100))) END AS valor_a_pagar
+FROM
+	cons_comovamos_01 AS cm
+INNER JOIN cbpo_claro.descuentos AS d ON
+	d.segmento = cm.segmento_bpo
+LEFT JOIN cbpo_claro.exclusiones_descuentos AS ec ON
+	ec.obligacion_id = cm.obligacion_id),
+cons_sumapagos AS(
+SELECT
+	p.obligacion_id ,
+	SUM(p.pago_valor) AS pago_total
+FROM
+	cbpo_claro.pagos AS p
+INNER JOIN cbpo_claro.obligaciones_asignacion AS oa ON
+	oa.obligacion_id = p.obligacion_id
+WHERE
+	oa.asignacion_id = (
+	SELECT
+		a.asignacion_id
+	FROM
+		cbpo_claro.asignaciones AS a
+	WHERE
+		a.estado IS TRUE)
+GROUP BY
+	p.obligacion_id),
+cons_fecpagos AS(
+SELECT
+	p.obligacion_id,
+	MAX(p.pago_fecha) AS maxfec_pago
+FROM
+	cbpo_claro.pagos AS p
+INNER JOIN cbpo_claro.obligaciones_asignacion AS oa ON
+	oa.obligacion_id = p.obligacion_id
+WHERE
+	oa.asignacion_id = (
+	SELECT
+		a.asignacion_id
+	FROM
+		cbpo_claro.asignaciones AS a
+	WHERE
+		a.estado IS TRUE)
+GROUP BY
+	p.obligacion_id),
+totalpagos AS (
+SELECT
+	s.obligacion_id,
+	s.pago_total,
+	f.maxfec_pago
+FROM
+	cons_sumapagos AS s
+INNER JOIN cons_fecpagos AS f ON
+	f.obligacion_id = s.obligacion_id),
+telpos AS (
+SELECT
+	deudor_id,
+	MAX(fec_ultima_marcacion) AS maxfec
+FROM
+	cbpo_claro.telefonos_positivos
+WHERE
+	deudor_id != ''
+GROUP BY
+	deudor_id),
+telefonopositivo AS (
+SELECT
+	tp.deudor_id,
+	tp.maxfec,
+	t.telefono
+FROM
+	telpos AS tp
+INNER JOIN cbpo_claro.telefonos_positivos AS t ON
+	t.deudor_id = tp.deudor_id
+	AND t.fec_ultima_marcacion = tp.maxfec),
+compromisosact AS (
+SELECT
+	deudor_id,
+	fecha_compromiso,
+	valor,
+	fecha_pago
+FROM
+	cbpo_claro.compromisos
+WHERE
+	fecha_compromiso >= (
+	SELECT
+		fecha_apertura
+	FROM
+		cbpo_claro.asignaciones
+	WHERE
+		estado IS TRUE)),
+maxfeccomp AS (
+SELECT
+	deudor_id,
+	MAX(fecha_compromiso) AS mfecha_compromiso
+FROM
+	compromisosact
+GROUP BY
+	deudor_id),
+finalcompromisos AS (
+SELECT
+	mc.deudor_id,
+	mc.mfecha_compromiso,
+	tc.fecha_pago,
+	tc.valor
+FROM
+	maxfeccomp AS mc
+INNER JOIN compromisosact AS tc ON
+	tc.deudor_id = mc.deudor_id
+	AND tc.fecha_compromiso = mc.mfecha_compromiso)
+SELECT
+	DISTINCT ROW_NUMBER () OVER (
+ORDER BY
+	cv.obligacion_id ) AS rownumber,
+	cv.deudor_id,
+	cv.obligacion_id,
+	cv.nombredelcliente,
+	cv.estado,
+	cv.tipo_cliente,
+	cv.unico,
+	cv.crmorigen,
+	cv.potencialmark,
+	cv.prepotencialmark,
+	cv.writeoffmark,
+	cv.segmento_bpo,
+	cv.valorscoring,
+	cv.numeroreferenciadepago,
+	'$ ' || cv.montoinicial_ AS monto_inicial,
+	'$ ' || cv.modinitcta_ AS monto_ini_cuenta,
+	cv.porcentaje_descuento,
+	'$ ' || cv.valor_descuento AS val_descuento,
+	'$ ' || cv.valor_a_pagar AS val_a_pagar,
+	'$ ' || cv.deudarealcuenta_ AS deuda_real,
+	'$ ' || t.pago_total AS val_pago,
+	t.maxfec_pago,
+	c.mfecha_compromiso,
+	c.fecha_pago,
+	'$ ' || ROUND(c.valor) AS valor_compromiso,
+	CASE WHEN t.maxfec_pago IS NOT NULL
+	AND t.maxfec_pago >= c.mfecha_compromiso THEN 'Cumplido'
+	WHEN t.maxfec_pago IS NOT NULL
+	AND t.maxfec_pago >= cv.fecha_primer_gestion THEN 'Pago con gestion'
+	WHEN t.maxfec_pago IS NOT NULL
+	AND t.maxfec_pago < cv.fecha_primer_gestion THEN 'Pago sin gestion'
+	WHEN t.maxfec_pago IS NULL
+	AND CURRENT_DATE + 1 = c.fecha_pago THEN 'Falta 1 dia'
+	WHEN t.maxfec_pago IS NULL
+	AND CURRENT_DATE + 2 = c.fecha_pago THEN 'Falta 2 dias'
+	WHEN t.maxfec_pago IS NULL
+	AND CURRENT_DATE = c.fecha_pago THEN 'Debe pagar hoy'
+	WHEN t.maxfec_pago IS NULL
+	AND CURRENT_DATE > c.fecha_pago THEN 'Incumplido'
+	WHEN t.maxfec_pago IS NULL
+	AND CURRENT_DATE <= c.fecha_pago THEN 'Vigente'
+	WHEN c.fecha_pago IS NULL THEN 'Sin acuerdo' END AS estado_acuerdo,
+	cv.indicador_m4,
+	cv.indicador_m3,
+	cv.indicador_m2,
+	cv.indicador_m1,
+	cv.fecha_primer_gestion,
+	cv.fecha_ultima_gestion,
+	cv.indicador_mes_actual,
+	cv.phone AS tel_mes_actual,
+	cv.asesor AS asesor_mes_actual,
+	cv.fecha_gestion AS fec_indicador_mes_actual,
+	CASE WHEN cv.fecha_gestion IS NULL THEN 'No contacto'
+	ELSE cv.contactabilidad END AS contact,
+	cv.indicador_hoy,
+	cv.repeticion_mes_actual,
+	cv.llamadas_mes_actual,
+	cv.sms_mes_actual,
+	cv.correos_mes_actual,
+	cv.gescall_mes_actual,
+	cv.whatsapp_mes_actual,
+	cv.visitas,
+	cv.no_contacto_mes_actual,
+	cv.total_ges_mes_actual,
+	tps.telefono AS tel_positivo,
+	tps.maxfec AS ult_fec_tel_pos
+FROM
+	cons_comovamos_02 AS cv
+LEFT JOIN totalpagos AS t ON
+	t.obligacion_id = cv.obligacion_id
+LEFT JOIN telefonopositivo AS tps ON
+	tps.deudor_id = cv.deudor_id
+LEFT JOIN finalcompromisos AS c ON
+	c.deudor_id = cv.deudor_id;
+
