@@ -19,6 +19,6 @@ from hello.views import excel_CV_COL,csv_CV_Claro
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('excel_CV_col/', excel_CV_COL),
+    path('excel_CV_Col/', excel_CV_COL),
     path('csv_CV_Claro/', csv_CV_Claro),
 ]

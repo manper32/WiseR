@@ -14,12 +14,13 @@ services:
   # database containers, one for each db
   database1:
     image: postgres
+    restart: always
     volumes:
       - database1_volume:/var/lib/postgresql/data
     env_file:
       - config/db/database1_env
-    networks:
-      - database1_network
+    #networks:
+    #  - database1_network
 
   # database2:
   #   image: postgres
@@ -33,6 +34,7 @@ services:
   # web container, with django + gunicorn
   djangoapp:
     build: .
+    restart: always
     environment:
       - DJANGO_SETTINGS_MODULE
     volumes:
@@ -41,36 +43,39 @@ services:
       - media:/opt/services/djangoapp/media
     ports:
       - 8000:8000
-    networks:
-      - database1_network
+    #networks:
+    #  - database1_network
       # - database2_network
-      - nginx_network
+      #  - nginx_network
     depends_on:
       - database1
       # - database2
+    links:
+      - database1
 
   # reverse proxy container (nginx)
   nginx:
     image: nginx
+    restart: always
     ports:
       # external port:container port
-      - 8080:80
+      - 80:80
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - static:/opt/services/djangoapp/static
       - media:/opt/services/djangoapp/media
-    networks:
-      - nginx_network
+    links:
+      - djangoapp
     depends_on:
       - djangoapp
 
-networks:
-  database1_network:
-    driver: bridge
+#networks:
+#database1_network:
+#    driver: bridge
   # database2_network:
   #   driver: bridge
-  nginx_network:
-    driver: bridge
+  #  nginx_network:
+  #    driver: bridge
 
 volumes:
   database1_volume:

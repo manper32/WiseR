@@ -325,7 +325,7 @@ def csv_CV_Claro(request):
     today = datetime.now()
     tablename = "CV_Claro"+today.strftime("%Y%m%d%H")+'.csv'
 
-    with open("./hello/Plantillas/Claro/QueryTel_Claro.txt","r") as f1:
+    with open("./hello//Plantillas/Claro/QueryTel_Claro.txt","r") as f1:
         queryP_PT = f1.read()
         
     with open("./hello/Plantillas/Claro/QueryCor_Claro.txt","r") as f2:
@@ -426,7 +426,7 @@ def csv_CV_Claro(request):
                             48:'ult_fec_tel_pos'})
 
     i=0
-    lin = ['tel_mes_actual','visitas','tel_positivo']
+    lin = ['no_contacto_mes_actual','gescall_mes_actual','tel_mes_actual','tel_positivo']
     for i in lin:
         df[i].fillna(0,inplace=True)
         df[i] = df[i].apply(lambda x: round(x))

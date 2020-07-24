@@ -30,6 +30,7 @@ DEBUG = bool( os.environ.get('DJANGO_DEBUG', True) )
 ALLOWED_HOSTS = [
     'testserver',
     'localhost',
+    '10.150.1.83',
     'cbpodev.com'
 ]
 
