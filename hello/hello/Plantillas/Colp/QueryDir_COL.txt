@@ -1,18 +1,11 @@
-select distinct 
-	trim(t.deudor_id) deudor_id,
-	trim(upper(t.direccion)) direccion
-from
-	cbpo_colpatria.obligaciones_asignacion as oa
-inner join cbpo_colpatria.obligaciones as o on
-	o.obligacion_id = oa.obligacion_id
-inner join cbpo_colpatria.direcciones as t on
-	t.deudor_id = o.deudor_id 
-where
-	oa.asignacion_id = (
-	select
-		asignacion_id
-	from
-		cbpo_colpatria.asignaciones as a
-	where
-		estado is true)
-order by trim(t.deudor_id );
+select distinct trim(deudor_id) 
+				,row_number ()
+	 			OVER (PARTITION  BY	trim(deudor_id)
+				ORDER BY	trim(deudor_id) desc,
+							trim(upper(direccion)) desc) AS ROWNUMBER
+				,trim(upper(direccion))
+from cbpo_colpatria.direcciones
+order by trim(deudor_id)desc,row_number ()
+	 			OVER (PARTITION  BY	trim(deudor_id)
+				ORDER BY	trim(deudor_id) desc,
+							trim(upper(direccion)) desc);

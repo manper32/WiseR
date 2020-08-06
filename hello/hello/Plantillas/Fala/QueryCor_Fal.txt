@@ -2,10 +2,10 @@ select distinct trim(deudor_id)
 				,row_number ()
 	 			OVER (PARTITION  BY	trim(deudor_id)
 				ORDER BY	trim(deudor_id) desc,
-							trim(upper(correo)) desc) AS ROWNUMBER
-				,trim(upper(correo))
-from cbpo_colpatria.correos
+							correo desc) AS ROWNUMBER
+				,correo
+from cbpo_falabella.correos
 order by trim(deudor_id)desc,row_number ()
 	 			OVER (PARTITION  BY	trim(deudor_id)
 				ORDER BY	trim(deudor_id) desc,
-							trim(upper(correo)) desc)desc;
+							correo desc);

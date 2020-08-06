@@ -1,7 +1,7 @@
-"""hello URL Configuration
+"""cv_app_d URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/2.0/topics/http/urls/
+    https://docs.djangoproject.com/en/3.0/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -15,10 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from hello.views import excel_CV_COL,csv_CV_Claro
+from hello.views import excel_CV_COL,csv_CV_Claro,csv_CV_CarP,csv_CV_Fala
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('excel_CV_Col/', excel_CV_COL),
     path('csv_CV_Claro/', csv_CV_Claro),
+    path('csv_CV_CarP/', csv_CV_CarP),
+    path('csv_CV_Fala/', csv_CV_Fala),
 ]
