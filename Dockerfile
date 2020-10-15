@@ -5,7 +5,7 @@ RUN mkdir -p /opt/services/djangoapp/src
 
 COPY Pipfile Pipfile.lock /opt/services/djangoapp/src/
 WORKDIR /opt/services/djangoapp/src
-RUN pip install pipenv && pipenv install --system
+RUN pip install pipenv && pipenv install --system --deploy --ignore-pipfile
 RUN pip install pandas openpyxl
 
 COPY . /opt/services/djangoapp/src
