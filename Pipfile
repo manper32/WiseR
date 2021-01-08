@@ -12,6 +12,10 @@ Django = "*"
 gunicorn = "*"
 openpyxl = "*"
 pandas = "*"
+rest_framework = "*"
+pyexcel_xlsx = "*"
+jxmlease = "*"
+requests = "*"
 
 
 [dev-packages]
