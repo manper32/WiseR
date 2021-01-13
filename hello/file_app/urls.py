@@ -8,4 +8,5 @@ urlpatterns = [
     path('upload_tipi/', views.FileTipi.as_view(), name='file_tipi'),
     # path('upload/', views.FileView.as_view(), name='file'),
     path('get_manage/<str:db>/<str:deudor_id>', views.ConsultaGestion.as_view(), name='consulta_Gestion'),
+    path('get_call/<str:db>', views.ConsultaTareaCall.as_view(), name='consulta_Call'),
 ]

@@ -3,7 +3,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
-from file_app.serializers import FileSerializer, GestionSerializer
+from file_app.serializers import FileSerializer, GestionSerializer, TareasSerializer
 from file_app.models import Tipificaciones, Codigos, NombreRama
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -283,7 +283,8 @@ class FileSMS(APIView):
             tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
                                                             registros = len(data),
                                                             clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones=0)
+                                                            obligaciones = 0,
+                                                            tipo = 'SMS')
             asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                         unidad = unidad)
             
@@ -314,7 +315,7 @@ class ConsultaGestion(generics.ListCreateAPIView):
         return queryset
     serializer_class = GestionSerializer
 
-# envio SMS
+# creacion tareas call
 class FileCreacionTarea(APIView):
 
     parser_classes = (MultiPartParser, FormParser)
@@ -331,7 +332,8 @@ class FileCreacionTarea(APIView):
             tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
                                                             registros = len(data),
                                                             clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones=0)
+                                                            obligaciones = 0,
+                                                            tipo = 'CALL')
             if int(numip) > 200:
                 #credenciales MySQL
                 connM = {
@@ -388,3 +390,16 @@ class FileCreacionTarea(APIView):
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# consulta gestiones historicas
+class ConsultaTareaCall(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = Tareas.objects.using(self.kwargs['db'])\
+            .filter(tarea_fecha_creacion__gte= datetime.now().replace(day=1
+                                                                            ,hour=0
+                                                                            ,minute=0
+                                                                            ,second=0
+                                                                            ,microsecond=0)
+                    ,tipo='CALL')
+        return queryset
+    serializer_class = TareasSerializer

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from file_app.models import File, Gestiones
+from file_app.models import File, Gestiones, Tareas
 
 class FileSerializer(serializers.ModelSerializer):
   class Meta():
@@ -23,3 +23,15 @@ class GestionSerializer(serializers.ModelSerializer):
       'nom_contacto_tercero',
       'tel_adicional',
       'ciudad_tel_adicional',)
+
+class TareasSerializer(serializers.ModelSerializer):
+  class Meta():
+    model = Tareas
+    fields = (
+      'tarea_id',
+      'tarea_fecha_creacion',
+      'unidad_id',
+      'registros',
+      'clientes',
+      'obligaciones',
+      'tipo')

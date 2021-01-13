@@ -91,7 +91,7 @@ class AuthUserUserPermissions(models.Model):
 
 class BaseTarea(models.Model):
     base_tarea_id = models.BigIntegerField(primary_key=True)
-    tarea = models.ForeignKey('Tareas', models.DO_NOTHING)
+    tarea_id = models.BigIntegerField()
     deudor_id = models.CharField(max_length=100)
     obligacion_id = models.CharField(max_length=100)
 
@@ -451,6 +451,7 @@ class Tareas(models.Model):
     registros = models.BigIntegerField()
     clientes = models.BigIntegerField()
     obligaciones = models.BigIntegerField()
+    tipo = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
