@@ -15,6 +15,7 @@ import jxmlease
 import psycopg2
 import requests
 import pandas as pd
+import mysql.connector
 
 cust = [
     'testbogo',
@@ -61,36 +62,72 @@ def SMS_Mas(tel='',msg='',lms='false',fls='false',pmu='true'):
 
         return b
 
-# @method_decorator(csrf_exempt,name='dispatch')
-# class FileView(APIView):
+def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
 
-#     parser_classes = (MultiPartParser, FormParser)
-#     def post(self, request, *args, **kwargs):
-#         file_serializer = FileSerializer(data=request.data)
-#         if file_serializer.is_valid():
-#             # file_serializer.save()
-            
-#             file_obj = request.data['file']
-#             data = get_data(file_obj)
-#             col = list(data.keys())
-#             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
-            
-#             for i in range(len(data)):
-#                 BogotaSms.objects.using(request.data.get('remark')).create(telefono=data['telefono'][i]
-#                 ,estado=False
-#                 ,cedula=data['cedula'][i]
-#                 ,fecha=datetime.now()
-#                 ,mensaje=data['mensaje'][i])
-#             # print(data)
-            
-#             for i in BogotaSms.objects.using(request.data.get('remark')).filter(estado=False):
-#                 SMS_Mas(str(i.telefono),
-#                             i.mensaje)
-#             BogotaSms.objects.using(request.data.get('remark')).filter(estado=False).update(estado=True)
+    if int(numip) > 200:
+        # n = '150'
+        connV = {
+        'server' : '10.150.1.'+str(numip),
+        'agc' : 'vicidial',
+        'user' : 'soporte',
+        'psw' : 'Bogota1234',
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&function=add_list&user={2}&pass={3}&list_id={4}&list_name={8}&campaign_id={5}&active={6}&list_description={7}&local_call_time={9}'}
+    else:
+        # n = '152'
+        connV = {
+        'server' : '10.152.1.'+str(numip),
+        'agc' : 'vicidial',
+        'user' : 'secetina',
+        'psw' : '1233692646',
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&function=add_list&user={2}&pass={3}&list_id={4}&list_name={8}&campaign_id={5}&active={6}&list_description={7}&local_call_time={9}'}
 
-#             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # url
+    # with open("/home/manuel/Documentos/WiseR/Vicidial/Templates/AL_URL.txt","r") as f1:
+        # al_url = f1.read()
+        
+    b = pd.DataFrame([requests.get(connV.get('url').format(connV.get('server'),
+                                    connV.get('agc'),
+                                    connV.get('user'),
+                                    connV.get('psw'),
+                                    list_id,
+                                    campaign,
+                                    active,
+                                    descr,
+                                    list_name,
+                                    local_call_time).replace('\n','')).text.split('|')])
+    return b
+
+def ALe_Vici(phone,list_id,Vendor_lead,numip):
+
+    if int(numip) > 200:
+        # n = '150'
+        connV = {
+        'server' : '10.150.1.'+numip,
+        'agc' : 'vicidial',
+        'user' : 'soporte',
+        'psw' : 'Bogota1234',
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number=9{4}&list_id={5}&vendor_lead_code={6}'}
+    else:
+        # n = '152'
+        connV = {
+        'server' : '10.152.1.'+numip,
+        'agc' : 'vicidial',
+        'user' : 'secetina',
+        'psw' : '1233692646',
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number=9{4}&list_id={5}&vendor_lead_code={6}'}
+
+    # url
+    # with open("/home/manuel/Documentos/WiseR/Vicidial/Templates/ALe_URL.txt","r") as f1:
+        # ale_url = f1.read()
+        
+    b = pd.DataFrame([requests.get(connV.get('url').format(connV.get('server'),
+                                    connV.get('agc'),
+                                    connV.get('user'),
+                                    connV.get('psw'),
+                                    phone,
+                                    list_id,
+                                    Vendor_lead).replace('\n','')).text.split('|')])
+    return b
 
 # Tipificaciones
 @method_decorator(csrf_exempt,name='dispatch')
@@ -269,9 +306,85 @@ class FileSMS(APIView):
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# consulta gestiones historicas
 class ConsultaGestion(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Gestiones.objects.using(self.kwargs['db'])\
             .filter(deudor_id=self.kwargs['deudor_id'])
         return queryset
     serializer_class = GestionSerializer
+
+# envio SMS
+class FileCreacionTarea(APIView):
+
+    parser_classes = (MultiPartParser, FormParser)
+    def post(self, request, numip, unidad, campaign, name):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
+            # file_serializer.save()
+
+            file_obj = request.data['file']
+            data = get_data(file_obj)
+            col = list(data.keys())
+            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones=0)
+            if int(numip) > 200:
+                #credenciales MySQL
+                connM = {
+                    'host' : '10.150.1.'+str(numip),
+                    'user':'desarrollo',
+                    'password':'soportE*8994',
+                    'database' : 'asterisk'}
+            else:
+                #credenciales MySQL
+                connM = {
+                    'host' : '10.152.1.'+str(numip),
+                    'user':'desarrollo',
+                    'password':'soportE*8994',
+                    'database' : 'asterisk'}
+            query = """
+            select max(list_id)
+            from asterisk.vicidial_lists vl
+            order by campaign_id desc;
+            """
+
+            list_id = pd.read_sql(query,mysql.connector.connect(**connM))
+            
+            a = AL_Vici(str(list_id.iloc[0,0]+1),
+                        campaign.replace(r'\n',''),
+                        'Y',#active,
+                        '--BLANK--',#descr,
+                        name,#list_name,
+                        '24hours',#local_call_time,
+                        str(numip))
+            
+            # print(list_id.iloc[0,0]+1,campaign,name,str(numip))
+            # print(a)
+
+            if a.iloc[0,0].find('SUCCESS: add_list LIST HAS BEEN ADDED') > -1:
+                # print(a)
+                pass
+                # return Response({'result' : a.iloc[0,0]},status = status.HTTP_201_CREATED)
+            else:
+                # print(a)
+                return Response({'result' : a.iloc[0,0]},status = status.HTTP_400_BAD_REQUEST)
+
+            for i in range(len(data)):
+                a = ALe_Vici(data['telefono'][i],
+                        list_id.iloc[0,0]+1,
+                        data['cedula'][i],
+                        str(numip))
+                if a.iloc[0,0].find('SUCCESS: add_lead LEAD HAS BEEN ADDED') > -1:
+                    # print(a)
+                    pass
+                else:
+                    # print(a)
+                    return Response({'result' : a.iloc[0,0]},status = status.HTTP_400_BAD_REQUEST)
+
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
