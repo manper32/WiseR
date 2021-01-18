@@ -7,24 +7,24 @@ class file_appRouter(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testbogo':
-            return 'testbogo'
+        if model._meta.app_label == 'Bogota':
+            return 'Bogota'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testbogo':
-            return 'testbogo'
+        if model._meta.app_label == 'Bogota':
+            return 'Bogota'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testbogo' or \
-           obj2._meta.app_label == 'testbogo':
+        if obj1._meta.app_label == 'Bogota' or \
+           obj2._meta.app_label == 'Bogota':
            return True
         return None
 
@@ -33,8 +33,8 @@ class file_appRouter(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testbogo':
-            return db == 'testbogo'
+        if app_label == 'Bogota':
+            return db == 'Bogota'
         return False
 
 class file_appRouter2(object):
@@ -46,24 +46,24 @@ class file_appRouter2(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testmaf':
-            return 'testmaf'
+        if model._meta.app_label == 'Maf':
+            return 'Maf'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testmaf':
-            return 'testmaf'
+        if model._meta.app_label == 'Maf':
+            return 'Maf'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testmaf' or \
-           obj2._meta.app_label == 'testmaf':
+        if obj1._meta.app_label == 'Maf' or \
+           obj2._meta.app_label == 'Maf':
            return True
         return None
 
@@ -72,8 +72,8 @@ class file_appRouter2(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testmaf':
-            return db == 'testmaf'
+        if app_label == 'Maf':
+            return db == 'Maf'
         return False
 
 class file_appRouter3(object):
@@ -85,24 +85,24 @@ class file_appRouter3(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testok':
-            return 'testok'
+        if model._meta.app_label == 'Cartera ok':
+            return 'Cartera ok'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testok':
-            return 'testok'
+        if model._meta.app_label == 'Cartera ok':
+            return 'Cartera ok'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testok' or \
-           obj2._meta.app_label == 'testok':
+        if obj1._meta.app_label == 'Cartera ok' or \
+           obj2._meta.app_label == 'Cartera ok':
            return True
         return None
 
@@ -111,8 +111,8 @@ class file_appRouter3(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testok':
-            return db == 'testok'
+        if app_label == 'Cartera ok':
+            return db == 'Cartera ok'
         return False
 
 class file_appRouter4(object):
@@ -124,24 +124,24 @@ class file_appRouter4(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testclar':
-            return 'testclar'
+        if model._meta.app_label == 'Claro':
+            return 'Claro'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testclar':
-            return 'testclar'
+        if model._meta.app_label == 'Claro':
+            return 'Claro'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testclar' or \
-           obj2._meta.app_label == 'testclar':
+        if obj1._meta.app_label == 'Claro' or \
+           obj2._meta.app_label == 'Claro':
            return True
         return None
 
@@ -150,8 +150,8 @@ class file_appRouter4(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testclar':
-            return db == 'testclar'
+        if app_label == 'Claro':
+            return db == 'Claro'
         return False
 
 class file_appRouter5(object):
@@ -163,24 +163,24 @@ class file_appRouter5(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testcode':
-            return 'testcode'
+        if model._meta.app_label == 'Codensa':
+            return 'Codensa'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testcode':
-            return 'testcode'
+        if model._meta.app_label == 'Codensa':
+            return 'Codensa'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testcode' or \
-           obj2._meta.app_label == 'testcode':
+        if obj1._meta.app_label == 'Codensa' or \
+           obj2._meta.app_label == 'Codensa':
            return True
         return None
 
@@ -189,8 +189,8 @@ class file_appRouter5(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testcode':
-            return db == 'testcode'
+        if app_label == 'Codensa':
+            return db == 'Codensa'
         return False
 
 class file_appRouter6(object):
@@ -202,24 +202,24 @@ class file_appRouter6(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testcolp':
-            return 'testcolp'
+        if model._meta.app_label == 'Colpatria':
+            return 'Colpatria'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testcolp':
-            return 'testcolp'
+        if model._meta.app_label == 'Colpatria':
+            return 'Colpatria'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testcolp' or \
-           obj2._meta.app_label == 'testcolp':
+        if obj1._meta.app_label == 'Colpatria' or \
+           obj2._meta.app_label == 'Colpatria':
            return True
         return None
 
@@ -228,8 +228,8 @@ class file_appRouter6(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testcolp':
-            return db == 'testcolp'
+        if app_label == 'Colpatria':
+            return db == 'Colpatria'
         return False
 
 class file_appRouter7(object):
@@ -241,24 +241,24 @@ class file_appRouter7(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testdavi':
-            return 'testdavi'
+        if model._meta.app_label == 'Davivienda':
+            return 'Davivienda'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testdavi':
-            return 'testdavi'
+        if model._meta.app_label == 'Davivienda':
+            return 'Davivienda'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testdavi' or \
-           obj2._meta.app_label == 'testdavi':
+        if obj1._meta.app_label == 'Davivienda' or \
+           obj2._meta.app_label == 'Davivienda':
            return True
         return None
 
@@ -267,8 +267,8 @@ class file_appRouter7(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testdavi':
-            return db == 'testdavi'
+        if app_label == 'Davivienda':
+            return db == 'Davivienda'
         return False
 
 class file_appRouter8(object):
@@ -280,24 +280,24 @@ class file_appRouter8(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testfala':
-            return 'testfala'
+        if model._meta.app_label == 'Falabella':
+            return 'Falabella'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testfala':
-            return 'testfala'
+        if model._meta.app_label == 'Falabella':
+            return 'Falabella'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testfala' or \
-           obj2._meta.app_label == 'testfala':
+        if obj1._meta.app_label == 'Falabella' or \
+           obj2._meta.app_label == 'Falabella':
            return True
         return None
 
@@ -306,8 +306,8 @@ class file_appRouter8(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testfala':
-            return db == 'testfala'
+        if app_label == 'Falabella':
+            return db == 'Falabella'
         return False
 
 class file_appRouter9(object):
@@ -319,24 +319,24 @@ class file_appRouter9(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testpopu':
-            return 'testpopu'
+        if model._meta.app_label == 'Banco popular':
+            return 'Banco popular'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testpopu':
-            return 'testpopu'
+        if model._meta.app_label == 'Banco popular':
+            return 'Banco popular'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testpopu' or \
-           obj2._meta.app_label == 'testpopu':
+        if obj1._meta.app_label == 'Banco popular' or \
+           obj2._meta.app_label == 'Banco popular':
            return True
         return None
 
@@ -345,8 +345,8 @@ class file_appRouter9(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testpopu':
-            return db == 'testpopu'
+        if app_label == 'Banco popular':
+            return db == 'Banco popular'
         return False
 
 class file_appRouter10(object):
@@ -358,24 +358,24 @@ class file_appRouter10(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testprog':
-            return 'testprog'
+        if model._meta.app_label == 'Progresa':
+            return 'Progresa'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testprog':
-            return 'testprog'
+        if model._meta.app_label == 'Progresa':
+            return 'Progresa'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testprog' or \
-           obj2._meta.app_label == 'testprog':
+        if obj1._meta.app_label == 'Progresa' or \
+           obj2._meta.app_label == 'Progresa':
            return True
         return None
 
@@ -384,8 +384,8 @@ class file_appRouter10(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testprog':
-            return db == 'testprog'
+        if app_label == 'Progresa':
+            return db == 'Progresa'
         return False
 
 class file_appRouter11(object):
@@ -397,24 +397,24 @@ class file_appRouter11(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testprop':
-            return 'testprop'
+        if model._meta.app_label == 'Cartera propia':
+            return 'Cartera propia'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testprop':
-            return 'testprop'
+        if model._meta.app_label == 'Cartera propia':
+            return 'Cartera propia'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testprop' or \
-           obj2._meta.app_label == 'testprop':
+        if obj1._meta.app_label == 'Cartera propia' or \
+           obj2._meta.app_label == 'Cartera propia':
            return True
         return None
 
@@ -423,8 +423,8 @@ class file_appRouter11(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testprop':
-            return db == 'testprop'
+        if app_label == 'Cartera propia':
+            return db == 'Cartera propia'
         return False
 
 class file_appRouter12(object):
@@ -436,24 +436,24 @@ class file_appRouter12(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testqnt':
-            return 'testqnt'
+        if model._meta.app_label == 'Qnt':
+            return 'Qnt'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testqnt':
-            return 'testqnt'
+        if model._meta.app_label == 'Qnt':
+            return 'Qnt'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testqnt' or \
-           obj2._meta.app_label == 'testqnt':
+        if obj1._meta.app_label == 'Qnt' or \
+           obj2._meta.app_label == 'Qnt':
            return True
         return None
 
@@ -462,8 +462,8 @@ class file_appRouter12(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testqnt':
-            return db == 'testqnt'
+        if app_label == 'Qnt':
+            return db == 'Qnt'
         return False
 
 class file_appRouter13(object):
@@ -475,24 +475,24 @@ class file_appRouter13(object):
         """
         Attempts to read mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testsant':
-            return 'testsant'
+        if model._meta.app_label == 'Santander':
+            return 'Santander'
         return None
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write mi_app_2 models go to mi_db_2.
         """
-        if model._meta.app_label == 'testsant':
-            return 'testsant'
+        if model._meta.app_label == 'Santander':
+            return 'Santander'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
         """
         Allow relations if a model in the mi_app_2 app is involved.
         """
-        if obj1._meta.app_label == 'testsant' or \
-           obj2._meta.app_label == 'testsant':
+        if obj1._meta.app_label == 'Santander' or \
+           obj2._meta.app_label == 'Santander':
            return True
         return None
 
@@ -501,6 +501,6 @@ class file_appRouter13(object):
         Make sure the mi_app_2 app only appears in the 'mi_db_2'
         database.
         """
-        if app_label == 'testsant':
-            return db == 'testsant'
+        if app_label == 'Santander':
+            return db == 'Santander'
         return False

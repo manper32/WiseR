@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-    'testbogo': {
+    'Bogota': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_bogota'
@@ -97,7 +97,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testmaf': {
+    'Maf': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_maf'
@@ -108,7 +108,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testok': {
+    'Cartera ok': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_carteraok'
@@ -119,7 +119,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testclar': {
+    'Claro': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_claro'
@@ -130,7 +130,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testcode': {
+    'Codensa': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_codensa'
@@ -141,7 +141,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testcolp': {
+    'Colpatria': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_colpatria'
@@ -152,7 +152,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testdavi': {
+    'Davivienda': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_davivienda'
@@ -163,7 +163,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testfala': {
+    'Falabella': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_falabella'
@@ -174,7 +174,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testpopu': {
+    'Banco popular': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_popular'
@@ -185,7 +185,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testprog': {
+    'Progresa': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_progresa'
@@ -196,7 +196,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testprop': {
+    'Cartera propia': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_propia'
@@ -207,7 +207,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testqnt': {
+    'Qnt': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_qnt'
@@ -218,7 +218,7 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
-    'testsant': {
+    'Santander': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_santander'
