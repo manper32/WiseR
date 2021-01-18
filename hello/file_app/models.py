@@ -50,28 +50,33 @@ class Tipificaciones(models.Model):
     prioridad = models.IntegerField(blank=True, null=True)
     indicador = models.IntegerField(blank=True, null=True)
     id = models.BigAutoField(primary_key=True)
+    unidad = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'tipificaciones'
-        unique_together = (('codigo01', 'codigo02', 'codigo03', 'codigo04', 'codigo05', 'codigo06', 'codigo07', 'codigo08', 'codigo09', 'codigo10'),)
+        unique_together = (('codigo01', 'codigo02', 'codigo03', 'codigo04', 'codigo05', 'codigo06', 'codigo07', 'codigo08', 'codigo09', 'codigo10', 'unidad'),)
 
 
 class Codigos(models.Model):
-    descripcion = models.CharField(max_length=250, blank=True, null=True)
+    descripcion = models.CharField(max_length=100, blank=True, null=True)
     codigo = models.IntegerField(primary_key=True)
+    unidad = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'codigos'
+        unique_together = (('codigo', 'unidad'),)
 
 class NombreRama(models.Model):
     id = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=100, blank=True, null=True)
+    unidad = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'nombre_rama'
+        unique_together = (('id', 'unidad'),)
 
 class Tareas(models.Model):
     tarea_id = models.BigAutoField(primary_key=True)

@@ -23,72 +23,6 @@ class Asignaciones(models.Model):
         db_table = 'asignaciones'
 
 
-class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=150)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group'
-
-
-class AuthGroupPermissions(models.Model):
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group_permissions'
-        unique_together = (('group', 'permission'),)
-
-
-class AuthPermission(models.Model):
-    name = models.CharField(max_length=255)
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-    codename = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_permission'
-        unique_together = (('content_type', 'codename'),)
-
-
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField()
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.BooleanField()
-    is_active = models.BooleanField()
-    date_joined = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
-
-
-class AuthUserGroups(models.Model):
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_groups'
-        unique_together = (('user', 'group'),)
-
-
-class AuthUserUserPermissions(models.Model):
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_user_permissions'
-        unique_together = (('user', 'permission'),)
-
-
 class BaseTarea(models.Model):
     base_tarea_id = models.BigIntegerField(primary_key=True)
     tarea_id = models.BigIntegerField()
@@ -119,20 +53,6 @@ class BasesAsignacion(models.Model):
         db_table = 'bases_asignacion'
 
 
-class BogotaSms(models.Model):
-    telefono = models.BigIntegerField(primary_key=True)
-    fecha = models.DateTimeField()
-    estado = models.BooleanField()
-    cedula = models.BigIntegerField()
-    mensaje = models.CharField(max_length=-1)
-    id = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'bogota_sms'
-        unique_together = (('telefono', 'fecha', 'estado', 'cedula', 'mensaje'),)
-
-
 class CamposObligatorios(models.Model):
     id_campo = models.IntegerField(primary_key=True)
     campo_nombre = models.CharField(max_length=50)
@@ -145,10 +65,12 @@ class CamposObligatorios(models.Model):
 class Codigos(models.Model):
     descripcion = models.CharField(max_length=-1, blank=True, null=True)
     codigo = models.IntegerField(primary_key=True)
+    unidad = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'codigos'
+        unique_together = (('codigo', 'unidad'),)
 
 
 class Compromisos(models.Model):
@@ -228,50 +150,6 @@ class Direcciones(models.Model):
         unique_together = (('direccion', 'deudor_id'),)
 
 
-class DjangoAdminLog(models.Model):
-    action_time = models.DateTimeField()
-    object_id = models.TextField(blank=True, null=True)
-    object_repr = models.CharField(max_length=200)
-    action_flag = models.SmallIntegerField()
-    change_message = models.TextField()
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'django_admin_log'
-
-
-class DjangoContentType(models.Model):
-    app_label = models.CharField(max_length=100)
-    model = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'django_content_type'
-        unique_together = (('app_label', 'model'),)
-
-
-class DjangoMigrations(models.Model):
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
-class DjangoSession(models.Model):
-    session_key = models.CharField(primary_key=True, max_length=40)
-    session_data = models.TextField()
-    expire_date = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_session'
-
-
 class Estructuras(models.Model):
     estructura_id = models.BigIntegerField(primary_key=True)
     estructura_nombre = models.CharField(max_length=100)
@@ -297,16 +175,6 @@ class EstructurasCampos(models.Model):
         db_table = 'estructuras_campos'
 
 
-class FileAppFile(models.Model):
-    file = models.CharField(max_length=100)
-    remark = models.CharField(max_length=20)
-    timestamp = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'file_app_file'
-
-
 class Gestiones(models.Model):
     gestion_id = models.BigIntegerField(primary_key=True)
     tarea_id = models.BigIntegerField()
@@ -316,7 +184,7 @@ class Gestiones(models.Model):
     asignacion_id = models.BigIntegerField()
     telefono = models.CharField(max_length=20, blank=True, null=True)
     canal = models.CharField(max_length=20)
-    id_tipificacion = models.IntegerField()
+    id_tipificacion = models.BigIntegerField()
     descripcion = models.TextField(blank=True, null=True)
     nom_contacto_tercero = models.CharField(max_length=-1, blank=True, null=True)
     tel_adicional = models.BigIntegerField(blank=True, null=True)
@@ -386,10 +254,12 @@ class MejorGestionDia(models.Model):
 class NombreRama(models.Model):
     id = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=-1, blank=True, null=True)
+    unidad = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'nombre_rama'
+        unique_together = (('id', 'unidad'),)
 
 
 class Obligaciones(models.Model):
@@ -426,7 +296,7 @@ class Pagos(models.Model):
 
 class Promesas(models.Model):
     promesa_id = models.BigIntegerField(primary_key=True)
-    gestion_id = models.BigIntegerField()
+    gestion = models.ForeignKey(Gestiones, models.DO_NOTHING)
     obligacion_id = models.CharField(max_length=100)
     promesa_valor = models.BigIntegerField()
     promesa_fecha_creacion = models.DateField()
@@ -512,11 +382,12 @@ class Tipificaciones(models.Model):
     prioridad = models.IntegerField(blank=True, null=True)
     indicador = models.IntegerField(blank=True, null=True)
     id = models.IntegerField()
+    unidad = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'tipificaciones'
-        unique_together = (('codigo01', 'codigo02', 'codigo03', 'codigo04', 'codigo05', 'codigo06', 'codigo07', 'codigo08', 'codigo09', 'codigo10'),)
+        unique_together = (('codigo01', 'codigo02', 'codigo03', 'codigo04', 'codigo05', 'codigo06', 'codigo07', 'codigo08', 'codigo09', 'codigo10', 'unidad'),)
 
 
 class TipoCliente(models.Model):

@@ -249,18 +249,21 @@ class FileTipi(APIView):
                                                                 codigo09=tipi_n.loc[i,['codigo9']],
                                                                 codigo10=tipi_n.loc[i,['codigo10']],
                                                                 prioridad=tipi_n.loc[i,['prioridad']],
-                                                                indicador=tipi_n.loc[i,['indicador']])
+                                                                indicador=tipi_n.loc[i,['indicador']],
+                                                                unidad=self.kwargs['unidad'])
 
             for i in cols:
                 if i.lower().find('codigo') > -1 and i in unq.columns:
                     for j in range(len(unq[[i,i+'_n']].dropna())):
                         Codigos.objects.using(request.data.get('remark')).create(descripcion=unq.loc[j,[i]][0],
-                                                                codigo=unq.loc[j,[i+'_n']][0])
+                                                                                codigo=unq.loc[j,[i+'_n']][0],
+                                                                                unidad=self.kwargs['unidad'])
             
             if 'data2' in locals():
                 for i in range(len(data2)):
                     NombreRama.objects.using(request.data.get('remark')).create(id=i+1,
-                                                                nombre=data2.loc[i,['nombre cliente']][0])
+                                                                                nombre=data2.loc[i,['nombre cliente']][0],
+                                                                                unidad=self.kwargs['unidad'])
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
