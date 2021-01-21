@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 from rest_framework import generics
 from file_app.serializers import FileSerializer, GestionSerializer, TareasSerializer
@@ -8,14 +9,16 @@ from file_app.models import Tipificaciones, Codigos, NombreRama
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from pyexcel_xlsx import get_data
-from file_app.models import Gestiones, Tareas, Asignaciones
+from file_app.models import Gestiones, Tareas, Asignaciones, IndicadoresGeneral
 from datetime import datetime
+from django.http import JsonResponse
 # from tablib import Dataset 
 import jxmlease
 import psycopg2
 import requests
 import pandas as pd
 import mysql.connector
+import json
 
 cust = [
     'testbogo',
@@ -310,13 +313,41 @@ class FileSMS(APIView):
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# # consulta gestiones historicas
+# class ConsultaGestion(generics.ListCreateAPIView):
+#     def get_queryset(self):
+#         queryset = Gestiones.objects.using(self.kwargs['db'])\
+#             .filter(deudor_id=self.kwargs['deudor_id'])
+#         return queryset
+#     serializer_class = GestionSerializer
+
 # consulta gestiones historicas
-class ConsultaGestion(generics.ListCreateAPIView):
-    def get_queryset(self):
-        queryset = Gestiones.objects.using(self.kwargs['db'])\
-            .filter(deudor_id=self.kwargs['deudor_id'])
-        return queryset
-    serializer_class = GestionSerializer
+class ConsultaGestion(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset1 = pd.DataFrame(list(Gestiones.objects.using(self.kwargs['db'])\
+            .filter(deudor_id=self.kwargs['deudor_id']).values(
+                'gestion_id',
+                'tarea_id',
+                'gestion_fecha',
+                'usuario_id',
+                'deudor_id',
+                'asignacion_id',
+                'telefono',
+                'canal',
+                'id_tipificacion',
+                'descripcion',
+                'nom_contacto_tercero',
+                'tel_adicional',
+                'ciudad_tel_adicional',)))
+        queryset2 = pd.DataFrame(list(IndicadoresGeneral.objects.using('public').all()\
+                .values('id','indicador')))
+        queryset = pd.merge(queryset1
+                            ,queryset2
+                            ,how = "left"
+                            ,left_on='id_tipificacion'
+                            ,right_on='id'
+                            ,indicator=False).drop(['id'],axis=1).to_dict(orient='records')
+        return JsonResponse(queryset,safe=False)
 
 # creacion tareas call
 class FileCreacionTarea(APIView):

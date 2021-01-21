@@ -86,6 +86,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
+    'public': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'OPTIONS': {
+            'options': '-c search_path=public'
+        },
+        'NAME': 'login',
+        'USER' : 'bi',
+        'PASSWORD' : 'juanitoMeToco2020',
+        'HOST' : '10.150.1.77',
+        'PORT' : '5432'
+    },
     'Bogota': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {

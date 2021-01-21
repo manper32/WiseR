@@ -113,3 +113,13 @@ class Unidades(models.Model):
     class Meta:
         managed = False
         db_table = 'unidades'
+
+class IndicadoresGeneral(models.Model):
+    id = models.IntegerField(primary_key=True)
+    codigo = models.CharField(max_length=100, blank=True, null=True)
+    indicador = models.CharField(max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'indicadores_general'
+        unique_together = (('id', 'indicador'),)
