@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('file/', include('file_app.urls')),
+    path('vicidial/', include('Vicidial.urls')),
     # path('SMS/', include('ImportSMS.urls')),
 ]
 
