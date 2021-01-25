@@ -225,7 +225,7 @@ class FileTipi(APIView):
                     n += 1
                 elif i.lower().find('codigo') > -1 and i.lower().find('_n') == -1:
                     tipi_n[[i]] = pd.merge(tipi[[i]],
-                                                unq[[i,i+'_n']],
+                                                unq[[i,i+'_n']].fillna(0),# merge correccion con el try
                                                 on = [i],
                                                 how = "left",
                                                 indicator = False)[i+'_n'].astype(int)
@@ -241,19 +241,22 @@ class FileTipi(APIView):
                     tipi_n[i] = tipi[i]
 
             for i in range(len(tipi_n)):
-                Tipificaciones.objects.using(request.data.get('remark')).create(codigo01=tipi_n.loc[i,['codigo1']],
-                                                                codigo02=tipi_n.loc[i,['codigo2']],
-                                                                codigo03=tipi_n.loc[i,['codigo3']],
-                                                                codigo04=tipi_n.loc[i,['codigo4']],
-                                                                codigo05=tipi_n.loc[i,['codigo5']],
-                                                                codigo06=tipi_n.loc[i,['codigo6']],
-                                                                codigo07=tipi_n.loc[i,['codigo7']],
-                                                                codigo08=tipi_n.loc[i,['codigo8']],
-                                                                codigo09=tipi_n.loc[i,['codigo9']],
-                                                                codigo10=tipi_n.loc[i,['codigo10']],
-                                                                prioridad=tipi_n.loc[i,['prioridad']],
-                                                                indicador=tipi_n.loc[i,['indicador']],
-                                                                unidad=self.kwargs['unidad'])
+                try:    
+                    Tipificaciones.objects.using(request.data.get('remark')).create(codigo01=tipi_n.loc[i,['codigo1']],
+                                                                    codigo02=tipi_n.loc[i,['codigo2']],
+                                                                    codigo03=tipi_n.loc[i,['codigo3']],
+                                                                    codigo04=tipi_n.loc[i,['codigo4']],
+                                                                    codigo05=tipi_n.loc[i,['codigo5']],
+                                                                    codigo06=tipi_n.loc[i,['codigo6']],
+                                                                    codigo07=tipi_n.loc[i,['codigo7']],
+                                                                    codigo08=tipi_n.loc[i,['codigo8']],
+                                                                    codigo09=tipi_n.loc[i,['codigo9']],
+                                                                    codigo10=tipi_n.loc[i,['codigo10']],
+                                                                    prioridad=tipi_n.loc[i,['prioridad']],
+                                                                    indicador=tipi_n.loc[i,['indicador']],
+                                                                    unidad=self.kwargs['unidad'])
+                except:
+                    pass
 
             for i in cols:
                 if i.lower().find('codigo') > -1 and i in unq.columns:
