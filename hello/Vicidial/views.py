@@ -4,6 +4,7 @@ from rest_framework import status
 from django.shortcuts import render
 import pandas as pd
 import requests
+import time
 
 def ED_Vici(AgentUser,Phone,VendorId,numip):
 
@@ -198,3 +199,29 @@ class PauseCode(APIView):
             return Response({'result' : a[0]},status = status.HTTP_200_OK)
         else:
             return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
+
+class HangUpManual(APIView):
+    def post(self, request, *args, **kwargs):
+        a = EH_Vici(self.kwargs['user'],self.kwargs['numip'])
+        c = ES_Vici(self.kwargs['user'],self.kwargs['status'],self.kwargs['numip'])
+        time.sleep(2)
+        b = EP_Vici(self.kwargs['user'],'PAUSE',self.kwargs['numip'])
+        time.sleep(2)
+        d = PC_Vici(self.kwargs['user'],self.kwargs['value'],self.kwargs['numip'])
+        if a[0].find('ÉXITO:') > -1\
+        and c[0].find('ÉXITO:') > -1\
+        and b[0].find('ÉXITO:') > -1\
+        and d[0].find('ÉXITO:') > -1:
+            return Response({
+                'result hangup' : a[0],
+                'result status' : c[0],
+                'result pause' : b[0],
+                'resut pause_code': d[0]
+            },status = status.HTTP_200_OK)
+        else:
+            return Response({
+                'result hangup' : a[0],
+                'result status' : c[0],
+                'result pause' : b[0],
+                'resut pause_code' : d[0]
+            },status = status.HTTP_400_BAD_REQUEST)
