@@ -9,4 +9,5 @@ urlpatterns = [
     path('status/<str:user>/<str:status>/<str:numip>', views.Status.as_view(), name='Status'),
     path('pause_code/<str:user>/<str:value>/<str:numip>', views.PauseCode.as_view(), name='PauseCode'),
     path('HangUpManual/<str:user>/<str:value>/<str:status>/<str:numip>', views.HangUpManual.as_view(), name='HangUpManual'),
+    path('ChangeIngroups/<str:user>/<str:numip>', views.ChangeIngroups.as_view(), name='ChangeIngroups'),
 ]

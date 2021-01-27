@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 import pandas as pd
+import mysql.connector
 import requests
 import time
 
@@ -159,6 +160,48 @@ def PC_Vici(user,value,numip):
                                     value)).text.split('|')
 
     return b
+    
+def CI_Vici(user,ingroup,numip):
+
+    if int(numip) > 200:
+        # n = '150'
+        connV = {
+        'server' : '10.150.1.'+numip
+        }
+    else:
+        # n = '152'
+        connV = {
+        'server' : '10.152.1.'+numip
+        }
+
+    ci_url = 'http://{0}/agc/api.php'
+    args1 = {
+        'source':'test',
+        'user':'secetina',
+        'pass':'1233692646',
+        'agent_user':user,
+        'function':'change_ingroups',
+        'value':'CHANGE',
+        'set_as_default':'YES',
+        'blended':'YES',
+        'ingroup_choices':ingroup
+    }
+    
+    args2 = {
+        'source':'test',
+        'user':'secetina',
+        'pass':'1233692646',
+        'agent_user':user,
+        'function':'logout',
+        'value':'LOGOUT',
+    }
+    
+    b = requests.get(ci_url.format(connV.get('server'))
+                     ,params=args1).text.split('|')
+    l = requests.get(ci_url.format(connV.get('server'))
+                     ,params=args2).text.split('|')
+
+    return [b,l]
 
 class Dial(APIView):
     def post(self, request, *args, **kwargs):
@@ -224,4 +267,32 @@ class HangUpManual(APIView):
                 'result status' : c[0],
                 'result pause' : b[0],
                 'resut pause_code' : d[0]
+            },status = status.HTTP_400_BAD_REQUEST)
+
+class ChangeIngroups(APIView):
+    def post(self, request, *args, **kwargs):
+        #credenciales MySQL120
+        connM = {
+            'host' : '10.152.1.'+self.kwargs['numip'],
+            'user':'desarrollo',
+            'password':'soportE*8994',
+            'database' : 'asterisk'}
+
+        query = """
+        select closer_campaigns
+        from asterisk.vicidial_users
+        where user = '{0}';"""
+
+        ingroup = pd.read_sql(query.format(self.kwargs['user']),mysql.connector.connect(**connM)).iloc[0,0]
+
+        a = CI_Vici(self.kwargs['user'],ingroup,self.kwargs['numip'])
+        if a[0][0].find('ÉXITO:') > -1 and a[1][0].find('ÉXITO:') > -1:
+            return Response({
+                'change_ingroups' : a[0][0],
+                'logout' : a[1][0]
+            },status = status.HTTP_200_OK)
+        else:
+            return Response({
+                'change_ingroups' : a[0][0],
+                'logout' : a[1][0]
             },status = status.HTTP_400_BAD_REQUEST)

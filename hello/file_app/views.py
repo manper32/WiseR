@@ -349,8 +349,9 @@ class ConsultaGestion(APIView):
                             ,how = "left"
                             ,left_on='id_tipificacion'
                             ,right_on='id'
-                            ,indicator=False).drop(['id'],axis=1).to_dict(orient='records')
-        return JsonResponse(queryset,safe=False)
+                            ,indicator=False).drop(['id'],axis=1).to_json(orient='records')
+        print(queryset)
+        return JsonResponse(json.loads(queryset),safe=False)
 
 # creacion tareas call
 class FileCreacionTarea(APIView):
