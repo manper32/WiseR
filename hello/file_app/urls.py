@@ -10,4 +10,5 @@ urlpatterns = [
     path('get_manage/<str:db>/<str:deudor_id>', views.ConsultaGestion.as_view(), name='consulta_Gestion'),
     path('get_call/<str:db>', views.ConsultaTareaCall.as_view(), name='consulta_Call'),
     path('get_SMS/<str:db>', views.ConsultaTareaSMS.as_view(), name='consulta_SMS'),
+    path('pause/', views.ConsultaVicidialPause.as_view(), name='VicidialPause'),
 ]

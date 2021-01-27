@@ -123,3 +123,11 @@ class IndicadoresGeneral(models.Model):
         managed = False
         db_table = 'indicadores_general'
         unique_together = (('id', 'indicador'),)
+
+class VicidialPause(models.Model):
+    id = models.IntegerField(blank=True, null=True)
+    pause = models.CharField(primary_key=True, max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'vicidial_pause'

@@ -333,3 +333,12 @@ class UsuariosWiser(models.Model):
     class Meta:
         managed = False
         db_table = 'usuarios_wiser'
+
+
+class VicidialPause(models.Model):
+    id = models.IntegerField(blank=True, null=True)
+    pause = models.CharField(primary_key=True, max_length=-1)
+
+    class Meta:
+        managed = False
+        db_table = 'vicidial_pause'

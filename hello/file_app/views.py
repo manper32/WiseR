@@ -4,12 +4,12 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 from rest_framework import generics
-from file_app.serializers import FileSerializer, GestionSerializer, TareasSerializer
+from file_app.serializers import FileSerializer, GestionSerializer, TareasSerializer, VicidialPauseSerializer
 from file_app.models import Tipificaciones, Codigos, NombreRama
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from pyexcel_xlsx import get_data
-from file_app.models import Gestiones, Tareas, Asignaciones, IndicadoresGeneral
+from file_app.models import Gestiones, Tareas, Asignaciones, IndicadoresGeneral, VicidialPause
 from datetime import datetime
 from django.http import JsonResponse
 # from tablib import Dataset 
@@ -454,3 +454,10 @@ class ConsultaTareaSMS(generics.ListCreateAPIView):
                                                                             ,tipo='SMS')
         return queryset
     serializer_class = TareasSerializer
+
+# consulta vicidial pause
+class ConsultaVicidialPause(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = VicidialPause.objects.using('public').all()
+        return queryset
+    serializer_class = VicidialPauseSerializer

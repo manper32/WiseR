@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from file_app.models import File, Gestiones, Tareas
+from file_app.models import File, Gestiones, Tareas, VicidialPause
 
 class FileSerializer(serializers.ModelSerializer):
   class Meta():
@@ -35,3 +35,8 @@ class TareasSerializer(serializers.ModelSerializer):
       'clientes',
       'obligaciones',
       'tipo')
+
+class VicidialPauseSerializer(serializers.ModelSerializer):
+  class Meta():
+    model = VicidialPause
+    fields = ('id','pause')
