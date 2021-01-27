@@ -203,6 +203,33 @@ def CI_Vici(user,ingroup,numip):
 
     return [b,l]
 
+def AU_Vici(a_user,a_pswd,u_level,full_name,u_group,numip):
+
+    connV = {
+    'server' : '10.152.1.'+numip,
+    'agc' : 'vicidial',
+    'user' : 'secetina',
+    'psw' : '1233692646'}
+
+    # # url
+    # with open("/home/manuel/Documentos/WiseR/Vicidial/Templates/AU_URL.txt","r") as f1:
+    #     au_url = f1.read()
+    au_url = 'http://{0}/{1}/non_agent_api.php?source=test&function=add_user&user={2}&pass={3}&agent_user={4}&agent_pass={5}&agent_user_level={6}&agent_full_name={7}&agent_user_group={8}'
+        
+    b = requests.get(au_url.format(connV.get('server'),
+                                    connV.get('agc'),
+                                    connV.get('user'),
+                                    connV.get('psw'),
+                                    a_user,
+                                    a_pswd,
+                                    u_level,
+                                    full_name,
+                                    u_group)).text.split('|')
+
+    return b
+
+#######################################
+
 class Dial(APIView):
     def post(self, request, *args, **kwargs):
         a = ED_Vici(self.kwargs['AgentUser'],self.kwargs['Phone'],self.kwargs['VendorId'],self.kwargs['numip'])
@@ -296,3 +323,25 @@ class ChangeIngroups(APIView):
                 'change_ingroups' : a[0][0],
                 'logout' : a[1][0]
             },status = status.HTTP_400_BAD_REQUEST)
+
+class AddUser(APIView):
+    def post(self, request, *args, **kwargs):
+        
+        a = AU_Vici(
+            self.kwargs['user'],
+            self.kwargs['psw'],
+            self.kwargs['level'],
+            self.kwargs['full_name'],
+            self.kwargs['group'],
+            self.kwargs['numip'])
+        # SUCCESS: add_user USER HAS BEEN ADDED - soporte
+        if a[0].find('SUCCESS:') > -1:
+            return Response({
+                'AddUser' : a[0]
+            },status = status.HTTP_200_OK)
+        else:
+            return Response({
+                'AddUser' : a[0]
+            },status = status.HTTP_400_BAD_REQUEST)
+
+# SUCCESS: update_user USER HAS BEEN DELETED - soporte
