@@ -165,3 +165,13 @@ class PerfilesWiser(models.Model):
     class Meta:
         managed = False
         db_table = 'perfiles_wiser'
+
+class CampaingList(models.Model):
+    id_list = models.BigAutoField(primary_key=True)
+    campaing_name = models.CharField(max_length=100, blank=True, null=True)
+    unit_id = models.IntegerField(blank=True, null=True)
+    campaing_type = models.BooleanField(default=False)
+
+    class Meta:
+        managed = False
+        db_table = 'campaing_list'

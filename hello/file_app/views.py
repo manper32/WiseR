@@ -7,6 +7,7 @@ from file_app.serializers import FileSerializer
 from file_app.serializers import GestionSerializer
 from file_app.serializers import TareasSerializer
 from file_app.serializers import VicidialPauseSerializer
+from file_app.serializers import CampaignListSerializer
 from file_app.models import Tipificaciones, Codigos, NombreRama
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -19,6 +20,7 @@ from file_app.models import VicidialPause
 from file_app.models import Unidad
 from file_app.models import TipificacionesHerramientas
 from file_app.models import UsuariosWiser
+from file_app.models import CampaingList
 from datetime import datetime
 from django.http import JsonResponse
 import jxmlease
@@ -27,6 +29,7 @@ import requests
 import pandas as pd
 import mysql.connector
 import json
+import random
 
 cust = [
     'testbogo',
@@ -492,7 +495,7 @@ class ConsultaTareaEMAIL(generics.ListCreateAPIView):
         return queryset
     serializer_class = TareasSerializer
 
-# consulta tarea EMAIL
+# consulta tarea Gescall
 class ConsultaTareaGesCall(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Tareas.objects.using(self.kwargs['db'])\
@@ -504,6 +507,13 @@ class ConsultaTareaGesCall(generics.ListCreateAPIView):
                                                                             ,tipo='GESCALL')
         return queryset
     serializer_class = TareasSerializer
+
+# consulta vicidial pause
+class ConsultaCampaignList(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = CampaingList.objects.using(self.kwargs['db']).all()
+        return queryset
+    serializer_class = CampaignListSerializer
 
 # consulta vicidial pause
 class ConsultaVicidialPause(generics.ListCreateAPIView):
@@ -627,3 +637,73 @@ class FileGesCall(APIView):
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class WolkvoxRepChat(APIView):
+    def get(self, request, *args, **kwargs):
+
+        lista = [
+            'cbpo_bogota'
+            ,'cbpo_carteraok'
+            ,'cbpo_claro'
+            ,'cbpo_davivienda'
+            ,'cbpo_falabella'
+            ,'cbpo_popular'
+            ,'cbpo_progresa'
+            ,'cbpo_propia'
+            ,'cbpo_qnt']
+        #credenciales PostgreSQL produccion
+        connP_P = {
+            'host' : '10.150.1.74',
+            'port' : '5432',
+            'user':'postgres',
+            'password':'cobrando.bi.2020',
+            'database' : 'postgres'
+            }
+        
+        queryP_data = """
+        select distinct agent_id
+        from """+lista[self.kwargs['num']]+""".wolk_chats
+        where chat_date between date_trunc('month',current_date) and current_date
+        order by agent_id desc;
+        """
+        queryP_data1 = """
+        select distinct chat_id
+        from """+lista[self.kwargs['num']]+""".wolk_chats
+        where chat_date between date_trunc('month',current_date) and current_date
+        and agent_id = {0}
+        order by chat_id desc;
+        """
+        queryP_data2 = """
+        select chat_id ,from_msg ,from_ ,to_ ,"time" ,msg 
+        from """+lista[self.kwargs['num']]+""".wolk_conv
+        where chat_id = {0}
+        order by time;
+        """
+        conexionP_P = psycopg2.connect(**connP_P)
+        cursorP_P = conexionP_P.cursor ()
+        cursorP_P.execute(queryP_data)
+        anwr = cursorP_P.fetchall()
+        
+        #i = 2
+        for i in range(len(anwr)):
+            agent = str(anwr[i][0])
+            cursorP_P.execute(queryP_data1.format(agent))
+            anwr1 = cursorP_P.fetchall()
+            if len(anwr1)-1 > 0:
+                chat = str(anwr1[random.randrange(0,len(anwr1)-1)][0])
+            else:
+                chat = str(anwr1[0][0])
+            cursorP_P.execute(queryP_data2.format(chat))
+            if 'anwr2' not in locals():
+                anwr2 = pd.DataFrame(cursorP_P.fetchall())
+            else:
+                anwr2 = anwr2.append(pd.DataFrame(cursorP_P.fetchall()))
+        anwr2 = anwr2.rename(columns={0:'chat_id',
+                                1:'from_msg',
+                                2:'emisor',
+                                3:'receptor',
+                                4:'fecha',
+                                5:'msg'}).to_json(orient='records')
+
+        return JsonResponse(json.loads(anwr2),safe=False)
+        # return Response({'ok':'ok'}, status=status.HTTP_201_CREATED)

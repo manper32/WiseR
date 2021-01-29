@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from file_app.models import File, Gestiones, Tareas, VicidialPause
+from file_app.models import File, Gestiones, Tareas, VicidialPause, CampaingList
 
 class FileSerializer(serializers.ModelSerializer):
   class Meta():
@@ -40,3 +40,12 @@ class VicidialPauseSerializer(serializers.ModelSerializer):
   class Meta():
     model = VicidialPause
     fields = ('id','pause')
+
+class CampaignListSerializer(serializers.ModelSerializer):
+  class Meta():
+    model = CampaingList
+    fields = (
+      'id_list',
+      'campaing_name',
+      'unit_id',
+      'campaing_type')

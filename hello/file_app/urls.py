@@ -16,4 +16,6 @@ urlpatterns = [
     path('get_EMAIL/<str:db>', views.ConsultaTareaEMAIL.as_view(), name='consulta_Email'),
     path('upload_gescall/<int:unidad>', views.FileGesCall.as_view(), name='file_gescall'),
     path('get_GESCALL/<str:db>', views.ConsultaTareaGesCall.as_view(), name='consulta_gescall'),
+    path('get_CampaignList/<str:db>', views.ConsultaCampaignList.as_view(), name='consultaCampaignList'),
+    path('get_WolkRepChat/<int:num>', views.WolkvoxRepChat.as_view(), name='WolkvoxRepChat'),
 ]
