@@ -13,4 +13,5 @@ urlpatterns = [
     path('pause/', views.ConsultaVicidialPause.as_view(), name='VicidialPause'),
     path('CallReturn/', views.RetornoLlamadas.as_view(), name='RetornoLlamdas'),
     path('upload_email/<int:unidad>', views.FileEmail.as_view(), name='RetornoLlamdas'),
+    path('get_EMAIL/<str:db>', views.ConsultaTareaEMAIL.as_view(), name='consulta_Email'),
 ]

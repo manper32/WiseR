@@ -479,6 +479,19 @@ class ConsultaTareaSMS(generics.ListCreateAPIView):
         return queryset
     serializer_class = TareasSerializer
 
+# consulta gestiones historicas
+class ConsultaTareaEMAIL(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = Tareas.objects.using(self.kwargs['db'])\
+            .filter(tarea_fecha_creacion__gte= datetime.now().replace(day=1
+                                                                            ,hour=0
+                                                                            ,minute=0
+                                                                            ,second=0
+                                                                            ,microsecond=0)
+                                                                            ,tipo='EMAIL')
+        return queryset
+    serializer_class = TareasSerializer
+
 # consulta vicidial pause
 class ConsultaVicidialPause(generics.ListCreateAPIView):
     def get_queryset(self):
