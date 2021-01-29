@@ -2,10 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
+from django.http import JsonResponse
 import pandas as pd
 import mysql.connector
 import requests
 import time
+import json
 
 def ED_Vici(AgentUser,Phone,VendorId,numip):
 
@@ -344,4 +346,45 @@ class AddUser(APIView):
                 'AddUser' : a[0]
             },status = status.HTTP_400_BAD_REQUEST)
 
-# SUCCESS: update_user USER HAS BEEN DELETED - soporte
+class AgentStatus(APIView):
+    def get(self, request, *args, **kwargs):
+        # credentials Vicidial
+        connV = {
+            'server' : '10.150.1.'+self.kwargs['numip'],
+            'agc' : 'vicidial',
+            'user' : 'secetina',
+            'psw' : '1233692646'
+        }
+        url='http://{0}/{1}/non_agent_api.php'
+        args = {
+          'source':'test',
+          'user':connV.get('user'),
+          'pass':connV.get('psw'),
+          'function':'agent_status',
+          'agent_user':self.kwargs['user'],
+          'header':'NO'
+        }
+        a = requests.get(url.format(connV.get('server')
+                                ,connV.get('agc'))
+                    ,params=args).text.split('|')
+        print(a)
+
+        if requests.get(url.format(connV.get('server'),connV.get('agc')),params=args).status_code < 300:
+            b = pd.DataFrame([a],columns= ['status',
+                                            'call_id',
+                                            'lead_id',
+                                            'campaign_id',
+                                            'calls_today',
+                                            'full_name',
+                                            'user_group',
+                                            'user_level',
+                                            'pause_code',
+                                            'real_time_sub_status',
+                                            'phone_number',
+                                            'vendor_lead_code',
+                                            'session_id']).to_json(orient='records')
+            return JsonResponse(json.loads(b),safe=False)
+        else:
+            return Response({
+                'AgentStatus' : a[0]
+            },status = status.HTTP_400_BAD_REQUEST)
