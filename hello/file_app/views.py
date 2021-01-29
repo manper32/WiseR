@@ -466,7 +466,7 @@ class ConsultaTareaCall(generics.ListCreateAPIView):
         return queryset
     serializer_class = TareasSerializer
 
-# consulta gestiones historicas
+# consulta tarea SMS
 class ConsultaTareaSMS(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Tareas.objects.using(self.kwargs['db'])\
@@ -479,7 +479,7 @@ class ConsultaTareaSMS(generics.ListCreateAPIView):
         return queryset
     serializer_class = TareasSerializer
 
-# consulta gestiones historicas
+# consulta tarea EMAIL
 class ConsultaTareaEMAIL(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Tareas.objects.using(self.kwargs['db'])\
@@ -489,6 +489,19 @@ class ConsultaTareaEMAIL(generics.ListCreateAPIView):
                                                                             ,second=0
                                                                             ,microsecond=0)
                                                                             ,tipo='EMAIL')
+        return queryset
+    serializer_class = TareasSerializer
+
+# consulta tarea EMAIL
+class ConsultaTareaGesCall(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = Tareas.objects.using(self.kwargs['db'])\
+            .filter(tarea_fecha_creacion__gte= datetime.now().replace(day=1
+                                                                            ,hour=0
+                                                                            ,minute=0
+                                                                            ,second=0
+                                                                            ,microsecond=0)
+                                                                            ,tipo='GESCALL')
         return queryset
     serializer_class = TareasSerializer
 
@@ -533,7 +546,7 @@ class RetornoLlamadas(APIView):
             
             return Response(file_serializer.data, status=status.HTTP_200_OK)
 
-# retorno de llamadas
+# Envio de EMAIL
 class FileEmail(APIView):
     def post(self, request, *args, **kwargs):
         file_serializer = FileSerializer(data=request.data)
@@ -568,6 +581,47 @@ class FileEmail(APIView):
                 ,id_tipificacion = tipificacion.id
                 ,descripcion = data['mensaje'][i]
                 ,nom_contacto_tercero = data['correo'][i])
+            # print(data)
+
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Envio de EMAIL
+class FileGesCall(APIView):
+    def post(self, request, *args, **kwargs):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
+
+            file_obj = request.data['file']
+            data = get_data(file_obj)
+            col = list(data.keys())
+            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'GESCALL')
+            try:
+                asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
+                                                                                    unidad = self.kwargs['unidad'])
+            except:
+                return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+
+            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
+                herramienta='GesCall'
+            )
+
+            for i in range(len(data)):
+                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
+                ,usuario_id = 'GESCALL'
+                ,deudor_id = data['cedula'][i]
+                ,asignacion_id = asignacion.asignacion_id
+                ,telefono = data['telefono'][i]
+                ,canal = 'GESCALL'
+                ,id_tipificacion = tipificacion.id
+                ,descripcion = data['texto'][i])
             # print(data)
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)

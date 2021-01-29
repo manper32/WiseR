@@ -12,6 +12,8 @@ urlpatterns = [
     path('get_SMS/<str:db>', views.ConsultaTareaSMS.as_view(), name='consulta_SMS'),
     path('pause/', views.ConsultaVicidialPause.as_view(), name='VicidialPause'),
     path('CallReturn/', views.RetornoLlamadas.as_view(), name='RetornoLlamdas'),
-    path('upload_email/<int:unidad>', views.FileEmail.as_view(), name='RetornoLlamdas'),
+    path('upload_email/<int:unidad>', views.FileEmail.as_view(), name='file_email'),
     path('get_EMAIL/<str:db>', views.ConsultaTareaEMAIL.as_view(), name='consulta_Email'),
+    path('upload_gescall/<int:unidad>', views.FileGesCall.as_view(), name='file_gescall'),
+    path('get_GESCALL/<str:db>', views.ConsultaTareaGesCall.as_view(), name='consulta_gescall'),
 ]

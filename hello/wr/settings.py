@@ -246,6 +246,17 @@ DATABASES = {
         'HOST' : '10.150.1.77',
         'PORT' : '5432'
     },
+    'AVANTEL': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'OPTIONS': {
+            'options': '-c search_path=cbpo_avantel'
+        },
+        'NAME': 'login',
+        'USER' : 'bi',
+        'PASSWORD' : 'juanitoMeToco2020',
+        'HOST' : '10.150.1.77',
+        'PORT' : '5432'
+    },
 }
 
 DATABASE_ROUTERS = [
