@@ -8,6 +8,15 @@
 from django.db import models
 
 
+class Archivo(models.Model):
+    deudor_id = models.CharField(max_length=-1, blank=True, null=True)
+    nombre = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'archivo'
+
+
 class Asignacion(models.Model):
     id = models.BigAutoField(primary_key=True)
     idunidad = models.ForeignKey('Unidad', models.DO_NOTHING, db_column='idunidad')
@@ -60,6 +69,7 @@ class Cliente(models.Model):
     fechacreacion = models.DateTimeField(blank=True, null=True)
     schema_name = models.CharField(max_length=-1, blank=True, null=True)
     logo = models.CharField(max_length=-1, blank=True, null=True)
+    user_group = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -111,6 +121,8 @@ class IndicadoresGeneral(models.Model):
     id = models.IntegerField(primary_key=True)
     codigo = models.CharField(max_length=-1, blank=True, null=True)
     indicador = models.CharField(max_length=-1)
+    indicador_contacto = models.IntegerField(blank=True, null=True)
+    indicador_efectividad = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -167,13 +179,26 @@ class Indicators(models.Model):
         unique_together = (('unit_id', 'user_id', 'fec'),)
 
 
+class ManagementIndicators(models.Model):
+    indicator_id = models.BigIntegerField()
+    indicator_cod = models.CharField(max_length=-1)
+    indicator_desc = models.CharField(max_length=-1)
+    contactability = models.IntegerField()
+    effectiveness = models.IntegerField()
+    ranking = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'management_indicators'
+
+
 class Metas(models.Model):
     tipo = models.CharField(max_length=255)
     unidad = models.ForeignKey('Unidad', models.DO_NOTHING)
     llamadas = models.IntegerField(blank=True, null=True)
     clientes = models.IntegerField(blank=True, null=True)
     contacto = models.IntegerField(blank=True, null=True)
-    compromisos = models.IntegerField(blank=True, null=True)
+    compromisos = models.FloatField(blank=True, null=True)
     fecha = models.DateField(blank=True, null=True)
 
     class Meta:
@@ -187,6 +212,15 @@ class ModulosWiser(models.Model):
     class Meta:
         managed = False
         db_table = 'modulos_wiser'
+
+
+class Mongo(models.Model):
+    deudor_id = models.CharField(max_length=-1, blank=True, null=True)
+    nombre = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'mongo'
 
 
 class NotificacionesWiser(models.Model):
@@ -252,6 +286,16 @@ class Productividad(models.Model):
         unique_together = (('id', 'fecha'),)
 
 
+class Queryfinal(models.Model):
+    deudor_id = models.CharField(max_length=-1, blank=True, null=True)
+    nombre = models.CharField(max_length=-1, blank=True, null=True)
+    estado = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'queryfinal'
+
+
 class ResultadoLlamada(models.Model):
     id_resultado = models.BigAutoField()
     id_asignacion = models.BigIntegerField()
@@ -295,6 +339,7 @@ class Unidad(models.Model):
     nombre = models.CharField(max_length=150)
     fechacreacion = models.DateTimeField()
     vicidial = models.CharField(max_length=120, blank=True, null=True)
+    prefijo = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -329,6 +374,8 @@ class UsuariosWiser(models.Model):
     estado = models.BooleanField(blank=True, null=True)
     fechacreacion = models.DateTimeField(blank=True, null=True)
     vicidial = models.CharField(max_length=-1, blank=True, null=True)
+    password_expiration = models.DateField(blank=True, null=True)
+    restore_password = models.BooleanField(blank=True, null=True)
 
     class Meta:
         managed = False

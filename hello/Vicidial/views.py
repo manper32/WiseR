@@ -19,7 +19,7 @@ def ED_Vici(AgentUser,Phone,VendorId,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+numip,
+        'server' : '10.150.1.'+numip,
         'agc' : 'agc',
         'user' : 'secetina',
         'psw' : '1233692646'}
@@ -54,7 +54,7 @@ def EH_Vici(user,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+numip,
+        'server' : '10.150.1.'+numip,
         'agc' : 'agc',
         'user' : 'secetina',
         'psw' : '1233692646'}
@@ -83,7 +83,7 @@ def EP_Vici(user,value,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+numip,
+        'server' : '10.150.1.'+numip,
         'agc' : 'agc',
         'user' : 'secetina',
         'psw' : '1233692646'}
@@ -113,7 +113,7 @@ def ES_Vici(user,status,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+numip,
+        'server' : '10.150.1.'+numip,
         'agc' : 'agc',
         'user' : 'secetina',
         'psw' : '1233692646'}
@@ -143,7 +143,7 @@ def PC_Vici(user,value,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+numip,
+        'server' : '10.150.1.'+numip,
         'agc' : 'agc',
         'user' : 'secetina',
         'psw' : '1233692646'}
@@ -171,7 +171,7 @@ def CI_Vici(user,ingroup,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+numip
+        'server' : '10.150.1.'+numip
         }
 
     ci_url = 'http://{0}/agc/api.php'
@@ -206,7 +206,7 @@ def CI_Vici(user,ingroup,numip):
 def AU_Vici(a_user,a_pswd,u_level,full_name,u_group,numip):
 
     connV = {
-    'server' : '10.152.1.'+numip,
+    'server' : '10.150.1.'+numip,
     'agc' : 'vicidial',
     'user' : 'secetina',
     'psw' : '1233692646'}
@@ -300,7 +300,7 @@ class ChangeIngroups(APIView):
     def post(self, request, *args, **kwargs):
         #credenciales MySQL120
         connM = {
-            'host' : '10.152.1.'+self.kwargs['numip'],
+            'host' : '10.150.1.'+self.kwargs['numip'],
             'user':'desarrollo',
             'password':'soportE*8994',
             'database' : 'asterisk'}

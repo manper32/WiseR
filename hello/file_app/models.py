@@ -24,18 +24,6 @@ class Gestiones(models.Model):
         managed = False
         db_table = 'gestiones'
 
-# class BogotaSms(models.Model):
-#     telefono = models.BigIntegerField(blank=True, null=True)
-#     fecha = models.DateTimeField(blank=True, null=True)
-#     estado = models.BooleanField(blank=True, null=True)
-#     cedula = models.BigIntegerField(blank=True, null=True)
-#     mensaje = models.CharField(max_length=255, blank=True, null=True)
-
-#     class Meta:
-#         managed = False
-#         db_table = 'bogota_sms'
-#         unique_together = (('telefono', 'fecha', 'estado', 'cedula', 'mensaje'),)
-
 class Tipificaciones(models.Model):
     codigo01 = models.IntegerField()
     codigo02 = models.IntegerField()
@@ -93,7 +81,7 @@ class Tareas(models.Model):
 
 class Asignaciones(models.Model):
     asignacion_id = models.BigIntegerField(primary_key=True)
-    unidad = models.ForeignKey('Unidades', models.DO_NOTHING)
+    unidad = models.ForeignKey('Unidad', models.DO_NOTHING)
     asignacion_nombre = models.CharField(max_length=100)
     asignacion_fecha_creacion = models.DateField()
     clientes = models.BigIntegerField()
@@ -105,14 +93,30 @@ class Asignaciones(models.Model):
         managed = False
         db_table = 'asignaciones'
 
-class Unidades(models.Model):
-    unidad_id = models.BigIntegerField(primary_key=True)
-    unidad_nombre = models.CharField(unique=True, max_length=100, blank=True, null=True)
-    unidad_estado = models.BooleanField(blank=True, null=True)
+class Unidad(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    idcliente = models.ForeignKey('Cliente', models.DO_NOTHING, db_column='idcliente')
+    nombre = models.CharField(max_length=150)
+    fechacreacion = models.DateTimeField()
+    vicidial = models.CharField(max_length=120, blank=True, null=True)
+    prefijo = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'unidades'
+        db_table = 'unidad'
+
+class Cliente(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nombre = models.CharField(max_length=50)
+    nombredb = models.CharField(max_length=50)
+    fechacreacion = models.DateTimeField(blank=True, null=True)
+    schema_name = models.CharField(max_length=150, blank=True, null=True)
+    logo = models.CharField(max_length=250, blank=True, null=True)
+    user_group = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'cliente'
 
 class IndicadoresGeneral(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -131,3 +135,33 @@ class VicidialPause(models.Model):
     class Meta:
         managed = False
         db_table = 'vicidial_pause'
+
+class TipificacionesHerramientas(models.Model):
+    id = models.IntegerField(primary_key=True)
+    herramienta = models.CharField(max_length=150)
+
+    class Meta:
+        managed = False
+        db_table = 'tipificaciones_herramientas'
+        unique_together = (('id', 'herramienta'),)
+
+class UsuariosWiser(models.Model):
+    nombre = models.CharField(max_length=255)
+    perfil = models.ForeignKey('PerfilesWiser', models.DO_NOTHING)
+    password = models.CharField(max_length=255)
+    estado = models.BooleanField(blank=True, null=True)
+    fechacreacion = models.DateTimeField(blank=True, null=True)
+    vicidial = models.CharField(max_length=150, blank=True, null=True)
+    password_expiration = models.DateField(blank=True, null=True)
+    restore_password = models.BooleanField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'usuarios_wiser'
+
+class PerfilesWiser(models.Model):
+    perfil = models.CharField(max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 'perfiles_wiser'

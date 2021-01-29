@@ -1,18 +1,26 @@
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 from rest_framework import generics
-from file_app.serializers import FileSerializer, GestionSerializer, TareasSerializer, VicidialPauseSerializer
+from file_app.serializers import FileSerializer
+from file_app.serializers import GestionSerializer
+from file_app.serializers import TareasSerializer
+from file_app.serializers import VicidialPauseSerializer
 from file_app.models import Tipificaciones, Codigos, NombreRama
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from pyexcel_xlsx import get_data
-from file_app.models import Gestiones, Tareas, Asignaciones, IndicadoresGeneral, VicidialPause
+from file_app.models import Gestiones
+from file_app.models import Tareas
+from file_app.models import Asignaciones
+from file_app.models import IndicadoresGeneral
+from file_app.models import VicidialPause
+from file_app.models import Unidad
+from file_app.models import TipificacionesHerramientas
+from file_app.models import UsuariosWiser
 from datetime import datetime
 from django.http import JsonResponse
-# from tablib import Dataset 
 import jxmlease
 import psycopg2
 import requests
@@ -78,7 +86,7 @@ def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+str(numip),
+        'server' : '10.150.1.'+str(numip),
         'agc' : 'vicidial',
         'user' : 'secetina',
         'psw' : '1233692646',
@@ -113,7 +121,7 @@ def ALe_Vici(phone,list_id,Vendor_lead,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.152.1.'+numip,
+        'server' : '10.150.1.'+numip,
         'agc' : 'vicidial',
         'user' : 'secetina',
         'psw' : '1233692646',
@@ -342,16 +350,32 @@ class ConsultaGestion(APIView):
                 'nom_contacto_tercero',
                 'tel_adicional',
                 'ciudad_tel_adicional',)))
+        queryset3 = pd.DataFrame(list(Tipificaciones.objects.using(self.kwargs['db']).all()\
+            .values('id','indicador')))
         queryset2 = pd.DataFrame(list(IndicadoresGeneral.objects.using('public').all()\
                 .values('id','indicador')))
-        queryset = pd.merge(queryset1
-                            ,queryset2
+        queryset4 = pd.DataFrame(list(UsuariosWiser.objects.using('public').all()\
+                .values('id','nombre')))
+        merge1 = pd.merge(queryset1
+                            ,queryset3
                             ,how = "left"
                             ,left_on='id_tipificacion'
                             ,right_on='id'
+                            ,indicator=False).drop(['id'],axis=1)
+        merge2 = pd.merge(merge1
+                            ,queryset2
+                            ,how = "left"
+                            ,left_on='indicador'
+                            ,right_on='id'
+                            ,indicator=False).drop(['id'],axis=1)
+        merge3 = pd.merge(merge2
+                            ,queryset4
+                            ,how = "left"
+                            ,left_on=merge2.usuario_id
+                            ,right_on=queryset4.id.astype(str)
                             ,indicator=False).drop(['id'],axis=1).to_json(orient='records')
-        print(queryset)
-        return JsonResponse(json.loads(queryset),safe=False)
+
+        return JsonResponse(json.loads(merge3),safe=False)
 
 # creacion tareas call
 class FileCreacionTarea(APIView):
@@ -382,7 +406,7 @@ class FileCreacionTarea(APIView):
             else:
                 #credenciales MySQL
                 connM = {
-                    'host' : '10.152.1.'+str(numip),
+                    'host' : '10.150.1.'+str(numip),
                     'user':'desarrollo',
                     'password':'soportE*8994',
                     'database' : 'asterisk'}
@@ -461,3 +485,78 @@ class ConsultaVicidialPause(generics.ListCreateAPIView):
         queryset = VicidialPause.objects.using('public').all()
         return queryset
     serializer_class = VicidialPauseSerializer
+
+# retorno de llamadas
+class RetornoLlamadas(APIView):
+    def post(self, request, *args, **kwargs):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
+
+            file_obj = request.data['file']
+            data = get_data(file_obj)
+            col = list(data.keys())
+            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+
+            prefijo = Unidad.objects.using('public').get(id=request.data.get('remark')).prefijo
+
+            if prefijo == None:
+                return Response({'error':'Añadir el prefijo a la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+
+            url = 'http://10.150.1.206/vicidial/non_agent_api.php'
+            
+            Plist = []
+            for i in range(len(data)):
+                args = {
+                'source' : 'test',
+                'user' : 'soporte',
+                'pass' : 'Bogota1234',
+                'function' : 'add_lead',
+                'phone_number' : str(prefijo)+str(data.loc[i,['telefono']][0]),
+                'list_id' : '20200811001',
+                'vendor_lead_code' : str(data.loc[i,['cedula']][0])
+                }
+                print(args)
+                Plist.append(requests.get(url,params=args).status_code)
+            
+            return Response(file_serializer.data, status=status.HTTP_200_OK)
+
+# retorno de llamadas
+class FileEmail(APIView):
+    def post(self, request, *args, **kwargs):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
+
+            file_obj = request.data['file']
+            data = get_data(file_obj)
+            col = list(data.keys())
+            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'EMAIL')
+            try:
+                asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
+                                                                                    unidad = self.kwargs['unidad'])
+            except:
+                return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+
+            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
+                herramienta='Email'
+            )
+
+            for i in range(len(data)):
+                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
+                ,usuario_id = 'EMAIL_BACK'
+                ,deudor_id = data['cedula'][i]
+                ,asignacion_id = asignacion.asignacion_id
+                ,canal = 'EMAIL'
+                ,id_tipificacion = tipificacion.id
+                ,descripcion = data['mensaje'][i]
+                ,nom_contacto_tercero = data['correo'][i])
+            # print(data)
+
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
