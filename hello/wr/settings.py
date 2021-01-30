@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'file_app',
     'Vicidial',
+    'Email',
 ]
 
 MIDDLEWARE = [
@@ -318,3 +319,11 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
 MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'analista.db@cobrando.com.co'
+EMAIL_HOST_USER = 'carterarecuperacion@cobrando.com.co'
+EMAIL_HOST_PASSWORD = 'Bogota*1234'
