@@ -3,7 +3,7 @@ from file_app import  views
 # from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
-    path('upload_task/<int:unidad>/<int:numip>/<str:name>/<str:campaign>', views.FileCreacionTarea.as_view(), name='file_task'),
+    path('upload_task/<int:unidad>/<int:numip>/<str:name>/<str:campaign>/<int:callf>', views.FileCreacionTarea.as_view(), name='file_task'),
     path('upload_SMS/<int:unidad>/<int:tipi>', views.FileSMS.as_view(), name='file_SMS'),
     path('upload_tipi/<int:unidad>', views.FileTipi.as_view(), name='file_tipi'),
     # path('upload/', views.FileView.as_view(), name='file'),

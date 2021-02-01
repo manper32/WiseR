@@ -81,7 +81,7 @@ def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
     if int(numip) > 200:
         # n = '150'
         connV = {
-        'server' : '10.150.1.'+str(numip),
+        'server' : '10.150.1.'+numip,
         'agc' : 'vicidial',
         'user' : 'soporte',
         'psw' : 'Bogota1234',
@@ -89,26 +89,34 @@ def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
     else:
         # n = '152'
         connV = {
-        'server' : '10.150.1.'+str(numip),
-        'agc' : 'vicidial',
-        'user' : 'secetina',
-        'psw' : '1233692646',
-        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&function=add_list&user={2}&pass={3}&list_id={4}&list_name={8}&campaign_id={5}&active={6}&list_description={7}&local_call_time={9}'}
+            'server' : '10.150.1.'+numip,
+            'agc' : 'vicidial',
+            'user' : 'secetina',
+            'psw' : '1233692646',
+            'url' : 'http://{0}/{1}/non_agent_api.php'
+            }
+        
+    args = {
+        'source':'test',
+        'function':'add_list',
+        'user':connV.get('user'),
+        'pass':connV.get('psw'),
+        'list_id':list_id,
+        'list_name':list_name,
+        'campaign_id':campaign,
+        'active':active,
+        'list_description':descr,
+        'local_call_time':local_call_time
+    }
+
 
     # url
     # with open("/home/manuel/Documentos/WiseR/Vicidial/Templates/AL_URL.txt","r") as f1:
         # al_url = f1.read()
         
-    b = pd.DataFrame([requests.get(connV.get('url').format(connV.get('server'),
-                                    connV.get('agc'),
-                                    connV.get('user'),
-                                    connV.get('psw'),
-                                    list_id,
-                                    campaign,
-                                    active,
-                                    descr,
-                                    list_name,
-                                    local_call_time).replace('\n','')).text.split('|')])
+    b = pd.DataFrame([requests.get(connV.get('url').\
+                     format(connV.get('server'),
+                            connV.get('agc')),params=args).text.split('|')])
     return b
 
 def ALe_Vici(phone,list_id,Vendor_lead,numip):
@@ -384,7 +392,7 @@ class ConsultaGestion(APIView):
 class FileCreacionTarea(APIView):
 
     parser_classes = (MultiPartParser, FormParser)
-    def post(self, request, numip, unidad, campaign, name):
+    def post(self, request, numip, unidad, campaign, name, callf):
         file_serializer = FileSerializer(data=request.data)
         if file_serializer.is_valid():
             # file_serializer.save()
@@ -394,11 +402,6 @@ class FileCreacionTarea(APIView):
             col = list(data.keys())
             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'CALL')
             if int(numip) > 200:
                 #credenciales MySQL
                 connM = {
@@ -420,8 +423,9 @@ class FileCreacionTarea(APIView):
             """
 
             list_id = pd.read_sql(query,mysql.connector.connect(**connM))
-            
-            a = AL_Vici(str(list_id.iloc[0,0]+1),
+            now = datetime.now()
+            print(now.strftime("%Y%m%d%H%M%S"))
+            a = AL_Vici(now.strftime("%Y%m%d%H%M%S"),
                         campaign.replace(r'\n',''),
                         'Y',#active,
                         '--BLANK--',#descr,
@@ -451,6 +455,19 @@ class FileCreacionTarea(APIView):
                 else:
                     # print(a)
                     return Response({'result' : a.iloc[0,0]},status = status.HTTP_400_BAD_REQUEST)
+                
+            if callf == 1:
+                tipo = 'CALLF'
+            elif callf == 0:
+                tipo = 'CALL'
+            else:
+                return Response({'error' : 'callf es binario'},status = status.HTTP_400_BAD_REQUEST)
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
+                                                registros = len(data),
+                                                clientes = len(data.cedula.drop_duplicates()),
+                                                obligaciones = 0,
+                                                tipo = tipo)
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:

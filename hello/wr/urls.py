@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('file/', include('file_app.urls')),
     path('vicidial/', include('Vicidial.urls')),
+    path('Email/', include('Email.urls')),
     # path('SMS/', include('ImportSMS.urls')),
 ]
 
