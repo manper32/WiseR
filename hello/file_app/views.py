@@ -9,6 +9,7 @@ from file_app.serializers import TareasSerializer
 from file_app.serializers import VicidialPauseSerializer
 from file_app.serializers import CampaignListSerializer
 from file_app.models import Tipificaciones, Codigos, NombreRama
+from django.db.models import Count, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from pyexcel_xlsx import get_data
@@ -343,50 +344,127 @@ class FileSMS(APIView):
 #         return queryset
 #     serializer_class = GestionSerializer
 
-# consulta gestiones historicas
-class ConsultaGestion(APIView):
-    def get(self, request, *args, **kwargs):
-        queryset1 = pd.DataFrame(list(Gestiones.objects.using(self.kwargs['db'])\
-            .filter(deudor_id=self.kwargs['deudor_id']).values(
-                'gestion_id',
-                'tarea_id',
-                'gestion_fecha',
-                'usuario_id',
-                'deudor_id',
-                'asignacion_id',
-                'telefono',
-                'canal',
-                'id_tipificacion',
-                'descripcion',
-                'nom_contacto_tercero',
-                'tel_adicional',
-                'ciudad_tel_adicional',)))
-        queryset3 = pd.DataFrame(list(Tipificaciones.objects.using(self.kwargs['db']).all()\
-            .values('id','indicador')))
-        queryset2 = pd.DataFrame(list(IndicadoresGeneral.objects.using('public').all()\
-                .values('id','indicador')))
-        queryset4 = pd.DataFrame(list(UsuariosWiser.objects.using('public').all()\
-                .values('id','nombre')))
-        merge1 = pd.merge(queryset1
-                            ,queryset3
-                            ,how = "left"
-                            ,left_on='id_tipificacion'
-                            ,right_on='id'
-                            ,indicator=False).drop(['id'],axis=1)
-        merge2 = pd.merge(merge1
-                            ,queryset2
-                            ,how = "left"
-                            ,left_on='indicador'
-                            ,right_on='id'
-                            ,indicator=False).drop(['id'],axis=1)
-        merge3 = pd.merge(merge2
-                            ,queryset4
-                            ,how = "left"
-                            ,left_on=merge2.usuario_id
-                            ,right_on=queryset4.id.astype(str)
-                            ,indicator=False).drop(['id'],axis=1).to_json(orient='records')
+# retorno de llamadas
+class RetornoLlamadas(APIView):
+    def post(self, request, *args, **kwargs):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
 
-        return JsonResponse(json.loads(merge3),safe=False)
+            file_obj = request.data['file']
+            data = get_data(file_obj)
+            col = list(data.keys())
+            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+
+            prefijo = Unidad.objects.using('public').get(id=self.kwargs['unidad']).prefijo
+
+            if prefijo == None:
+                return Response({'error':'Añadir el prefijo a la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+
+            url = 'http://10.150.1.206/vicidial/non_agent_api.php'
+            
+            Plist = []
+            for i in range(len(data)):
+                args = {
+                'source' : 'test',
+                'user' : 'soporte',
+                'pass' : 'Bogota1234',
+                'function' : 'add_lead',
+                'phone_number' : str(prefijo)+str(data.loc[i,['telefono']][0]),
+                'list_id' : '20200811001',
+                'vendor_lead_code' : str(data.loc[i,['cedula']][0])
+                }
+                # print(args)
+                Plist.append(requests.get(url,params=args).status_code)
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'RETURN')
+            
+            return Response(file_serializer.data, status=status.HTTP_200_OK)
+
+# Envio de EMAIL
+class FileEmail(APIView):
+    def post(self, request, *args, **kwargs):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
+
+            file_obj = request.data['file']
+            data = get_data(file_obj)
+            col = list(data.keys())
+            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'EMAIL')
+            try:
+                asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
+                                                                                    unidad = self.kwargs['unidad'])
+            except:
+                return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+
+            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
+                herramienta='Email'
+            )
+
+            for i in range(len(data)):
+                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
+                ,usuario_id = 'EMAIL_BACK'
+                ,deudor_id = data['cedula'][i]
+                ,asignacion_id = asignacion.asignacion_id
+                ,canal = 'EMAIL'
+                ,id_tipificacion = tipificacion.id
+                ,descripcion = data['mensaje'][i]
+                ,nom_contacto_tercero = data['correo'][i])
+            # print(data)
+
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Envio de EMAIL
+class FileGesCall(APIView):
+    def post(self, request, *args, **kwargs):
+        file_serializer = FileSerializer(data=request.data)
+        if file_serializer.is_valid():
+
+            file_obj = request.data['file']
+            data = get_data(file_obj)
+            col = list(data.keys())
+            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'GESCALL')
+            try:
+                asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
+                                                                                    unidad = self.kwargs['unidad'])
+            except:
+                return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+
+            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
+                herramienta='GesCall'
+            )
+
+            for i in range(len(data)):
+                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
+                ,usuario_id = 'GESCALL'
+                ,deudor_id = data['cedula'][i]
+                ,asignacion_id = asignacion.asignacion_id
+                ,telefono = data['telefono'][i]
+                ,canal = 'GESCALL'
+                ,id_tipificacion = tipificacion.id
+                ,descripcion = data['texto'][i])
+            # print(data)
+
+            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # creacion tareas call
 class FileCreacionTarea(APIView):
@@ -474,6 +552,51 @@ class FileCreacionTarea(APIView):
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # consulta gestiones historicas
+class ConsultaGestion(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset1 = pd.DataFrame(list(Gestiones.objects.using(self.kwargs['db'])\
+            .filter(deudor_id=self.kwargs['deudor_id']).values(
+                'gestion_id',
+                'tarea_id',
+                'gestion_fecha',
+                'usuario_id',
+                'deudor_id',
+                'asignacion_id',
+                'telefono',
+                'canal',
+                'id_tipificacion',
+                'descripcion',
+                'nom_contacto_tercero',
+                'tel_adicional',
+                'ciudad_tel_adicional',)))
+        queryset3 = pd.DataFrame(list(Tipificaciones.objects.using(self.kwargs['db']).all()\
+            .values('id','indicador')))
+        queryset2 = pd.DataFrame(list(IndicadoresGeneral.objects.using('public').all()\
+                .values('id','indicador')))
+        queryset4 = pd.DataFrame(list(UsuariosWiser.objects.using('public').all()\
+                .values('id','nombre')))
+        merge1 = pd.merge(queryset1
+                            ,queryset3
+                            ,how = "left"
+                            ,left_on='id_tipificacion'
+                            ,right_on='id'
+                            ,indicator=False).drop(['id'],axis=1)
+        merge2 = pd.merge(merge1
+                            ,queryset2
+                            ,how = "left"
+                            ,left_on='indicador'
+                            ,right_on='id'
+                            ,indicator=False).drop(['id'],axis=1)
+        merge3 = pd.merge(merge2
+                            ,queryset4
+                            ,how = "left"
+                            ,left_on=merge2.usuario_id
+                            ,right_on=queryset4.id.astype(str)
+                            ,indicator=False).drop(['id'],axis=1).to_json(orient='records')
+
+        return JsonResponse(json.loads(merge3),safe=False)
+
+# consulta gestiones historicas
 class ConsultaTareaCall(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Tareas.objects.using(self.kwargs['db'])\
@@ -525,7 +648,7 @@ class ConsultaTareaGesCall(generics.ListCreateAPIView):
         return queryset
     serializer_class = TareasSerializer
 
-# consulta vicidial pause
+# consulta vicidial campaigns
 class ConsultaCampaignList(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = CampaingList.objects.using(self.kwargs['db']).all()
@@ -539,121 +662,35 @@ class ConsultaVicidialPause(generics.ListCreateAPIView):
         return queryset
     serializer_class = VicidialPauseSerializer
 
-# retorno de llamadas
-class RetornoLlamadas(APIView):
-    def post(self, request, *args, **kwargs):
-        file_serializer = FileSerializer(data=request.data)
-        if file_serializer.is_valid():
+# consulta tareas Return
+class ConsultaTareasReturn(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = Tareas.objects.using(self.kwargs['db']).filter(
+            tipo='RETURN',
+            tarea_fecha_creacion__gte=datetime.now().replace(day=1
+                                                            ,hour=0
+                                                            ,minute=0
+                                                            ,second=0
+                                                            ,microsecond=0))
+        return queryset
+    serializer_class = TareasSerializer
 
-            file_obj = request.data['file']
-            data = get_data(file_obj)
-            col = list(data.keys())
-            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
+# consulta tareas Return
+class ConsultaTareasSum(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = Tareas.objects.using(self.kwargs['db'])\
+                .filter(tipo=self.kwargs['tipo'],
+                        tarea_fecha_creacion__gte=datetime.now().replace(day=1
+                                                                    ,hour=0
+                                                                    ,minute=0
+                                                                    ,second=0
+                                                                    ,microsecond=0))\
+                .values('tipo')\
+                .annotate(rcount=Sum('registros'))
+                
+        # print(queryset)
 
-            prefijo = Unidad.objects.using('public').get(id=request.data.get('remark')).prefijo
-
-            if prefijo == None:
-                return Response({'error':'Añadir el prefijo a la unidad'}, status=status.HTTP_400_BAD_REQUEST)
-
-            url = 'http://10.150.1.206/vicidial/non_agent_api.php'
-            
-            Plist = []
-            for i in range(len(data)):
-                args = {
-                'source' : 'test',
-                'user' : 'soporte',
-                'pass' : 'Bogota1234',
-                'function' : 'add_lead',
-                'phone_number' : str(prefijo)+str(data.loc[i,['telefono']][0]),
-                'list_id' : '20200811001',
-                'vendor_lead_code' : str(data.loc[i,['cedula']][0])
-                }
-                print(args)
-                Plist.append(requests.get(url,params=args).status_code)
-            
-            return Response(file_serializer.data, status=status.HTTP_200_OK)
-
-# Envio de EMAIL
-class FileEmail(APIView):
-    def post(self, request, *args, **kwargs):
-        file_serializer = FileSerializer(data=request.data)
-        if file_serializer.is_valid():
-
-            file_obj = request.data['file']
-            data = get_data(file_obj)
-            col = list(data.keys())
-            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
-
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'EMAIL')
-            try:
-                asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
-                                                                                    unidad = self.kwargs['unidad'])
-            except:
-                return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
-
-            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
-                herramienta='Email'
-            )
-
-            for i in range(len(data)):
-                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
-                ,usuario_id = 'EMAIL_BACK'
-                ,deudor_id = data['cedula'][i]
-                ,asignacion_id = asignacion.asignacion_id
-                ,canal = 'EMAIL'
-                ,id_tipificacion = tipificacion.id
-                ,descripcion = data['mensaje'][i]
-                ,nom_contacto_tercero = data['correo'][i])
-            # print(data)
-
-            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Envio de EMAIL
-class FileGesCall(APIView):
-    def post(self, request, *args, **kwargs):
-        file_serializer = FileSerializer(data=request.data)
-        if file_serializer.is_valid():
-
-            file_obj = request.data['file']
-            data = get_data(file_obj)
-            col = list(data.keys())
-            data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
-
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'GESCALL')
-            try:
-                asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
-                                                                                    unidad = self.kwargs['unidad'])
-            except:
-                return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
-
-            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
-                herramienta='GesCall'
-            )
-
-            for i in range(len(data)):
-                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
-                ,usuario_id = 'GESCALL'
-                ,deudor_id = data['cedula'][i]
-                ,asignacion_id = asignacion.asignacion_id
-                ,telefono = data['telefono'][i]
-                ,canal = 'GESCALL'
-                ,id_tipificacion = tipificacion.id
-                ,descripcion = data['texto'][i])
-            # print(data)
-
-            return Response(file_serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(queryset, status=status.HTTP_201_CREATED)
 
 class WolkvoxRepChat(APIView):
     def get(self, request, *args, **kwargs):
