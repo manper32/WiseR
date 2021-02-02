@@ -100,13 +100,7 @@ class EmailTrap(APIView):
         plain_message,
         'carterarecuperacion@cobrando.com.co',
         [
-            # 'Administraciondecartera@cobrando.com.co',
-            # 'larodriguez@cobrando.com.co'
-            # 'marce.gonzalez.l@gmail.com',
-            # 'mgonzalez@cobrando.com.co',
-            # 'desarrollo@cobrando.com.co',
-            'vallonmar@gmail.com',
-            'manuel_perez_32@outlook.com'
+            self.kwargs['destino'],
         ])
         mail.attach_alternative(html_message, 'text/html')
         mail.send()
