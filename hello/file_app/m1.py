@@ -362,6 +362,19 @@ class HerramientasProcesos(models.Model):
         db_table = 'herramientas_procesos'
 
 
+class IndicadoresGeneral(models.Model):
+    id = models.IntegerField(primary_key=True)
+    codigo = models.CharField(max_length=255)
+    indicador = models.CharField(max_length=255)
+    indicador_contacto = models.IntegerField(blank=True, null=True)
+    indicador_efectividad = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'indicadores_general'
+        unique_together = (('id', 'indicador'),)
+
+
 class InsumoCallbot(models.Model):
     insumo_id = models.BigIntegerField(primary_key=True)
 
@@ -514,6 +527,7 @@ class Tareas(models.Model):
     clientes = models.BigIntegerField()
     obligaciones = models.BigIntegerField()
     tipo = models.CharField(max_length=-1, blank=True, null=True)
+    nombre = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False

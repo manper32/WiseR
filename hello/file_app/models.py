@@ -74,6 +74,7 @@ class Tareas(models.Model):
     clientes = models.BigIntegerField()
     obligaciones = models.BigIntegerField(blank=True, null=True)
     tipo = models.CharField(max_length=100, blank=True, null=True)
+    nombre = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
         managed = False

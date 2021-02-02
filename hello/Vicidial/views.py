@@ -367,7 +367,7 @@ class AgentStatus(APIView):
         a = requests.get(url.format(connV.get('server')
                                 ,connV.get('agc'))
                     ,params=args).text.split('|')
-        print(a)
+        # print(a)
 
         if requests.get(url.format(connV.get('server'),connV.get('agc')),params=args).status_code < 300:
             b = pd.DataFrame([a],columns= ['status',

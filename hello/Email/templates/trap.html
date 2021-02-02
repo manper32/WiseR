@@ -132,7 +132,7 @@
     <tr>
         <td bgcolor = \"#ffffff\" style= \"padding: 0 40px 40px; font-family: sans-serif; font-size: 15px; line-height: 140%; color: #555555; text-align: left;\" >
 
-                      <p style= \"margin: -28px 0px 0px -3px;font-size: 15pt;\"><b> Señor(a):</b> strNombrecliente.Trim() + </p>
+                      <p style= \"margin: -28px 0px 0px -3px;font-size: 15pt;\"><b> Señor(a):</b> {{Nombrecliente}} </p>
                   </td>
     </tr>
     <tr>
@@ -167,11 +167,11 @@
 "-NIT: 830.056.578-7<br>
 "-Referencia de pago: Número de cédula del titular de la obligación.
 </p>
-<center><a href=\"" + strPath + "\"><img src = 'cid:imagen2' alt=\"logo_Mesa_de_trabajo_1\" border=\"0\" style=\"display: block; padding-bottom: 31px; float: center; width: 14%; padding-right: 24px;\" /></a></center>
+<center><a href=\"" {{URL}} "\"><img src = 'https://i.pinimg.com/originals/43/05/93/430593a32b63a49109f87a5f20d33a22.png' alt=\"logo_Mesa_de_trabajo_1\" border=\"0\" style=\"display: block; padding-bottom: 31px; float: center; width: 14%; padding-right: 24px;\" /></a></center>
 <h4 style = \"text-align: center\" > ESTOS SON LOS DATOS DE SU COMPROMISO</h4>
-                        <p style = \"text-align: center\" ><b> Valor:</b> $ txtMonto.Text.Trim() + <br>
-                        <b>Fecha de pago:</b> dtpFechapago.Text.Trim() + </p>
-                        //<br><b>Quiere Pagar por PSE? <a href=\"" + strPath + "\" style=\"cursor: pointer !important; color: #169439 !important;\">¡Por favor Dar click aqui...!</a> ; Su codigo para el ingreso a la plataforma es :</b> "+ token.Substring(0, longitud) + " </p>
+                        <p style = \"text-align: center\" ><b> Valor:</b> $ {{Monto}} <br>
+                        <b>Fecha de pago:</b> {{Fechapago}} </p>
+                        //<br><b>Quiere Pagar por PSE? <a href=\"" {{URL}} "\" style=\"cursor: pointer !important; color: #169439 !important;\">¡Por favor Dar click aqui...!</a> ; Su codigo para el ingreso a la plataforma es :</b> "{{URL}}" </p>
                                 </td>
                             </tr>
                         </table>

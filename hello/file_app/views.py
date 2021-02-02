@@ -84,9 +84,9 @@ def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
         connV = {
         'server' : '10.150.1.'+numip,
         'agc' : 'vicidial',
-        'user' : 'soporte',
-        'psw' : 'Bogota1234',
-        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&function=add_list&user={2}&pass={3}&list_id={4}&list_name={8}&campaign_id={5}&active={6}&list_description={7}&local_call_time={9}'}
+        'user' : '6666',
+        'psw' : 'cobrando2012',
+        'url' : 'http://{0}/{1}/non_agent_api.php'}
     else:
         # n = '152'
         connV = {
@@ -545,7 +545,8 @@ class FileCreacionTarea(APIView):
                                                 registros = len(data),
                                                 clientes = len(data.cedula.drop_duplicates()),
                                                 obligaciones = 0,
-                                                tipo = tipo)
+                                                tipo = tipo,
+                                                nombre = name)
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
