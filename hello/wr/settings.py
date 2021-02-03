@@ -261,6 +261,7 @@ DATABASES = {
 }
 
 DATABASE_ROUTERS = [
+    # file_app
     'file_app.routers.file_appRouter',
     'file_app.routers.file_appRouter2',
     'file_app.routers.file_appRouter3',
@@ -274,6 +275,8 @@ DATABASE_ROUTERS = [
     'file_app.routers.file_appRouter11',
     'file_app.routers.file_appRouter12',
     'file_app.routers.file_appRouter13',
+    # Vicidial
+    'Vicidial.routers.VicidialRouter',
 ]
 
 

@@ -12,4 +12,5 @@ urlpatterns = [
     path('ChangeIngroups/<str:user>/<str:numip>', views.ChangeIngroups.as_view(), name='ChangeIngroups'),
     path('AddUser/<str:user>/<str:psw>/<str:level>/<str:full_name>/<str:group>/<str:numip>', views.AddUser.as_view(), name='AddUser'),
     path('AgentStatus/<str:user>/<str:numip>', views.AgentStatus.as_view(), name='AgentStatus'),
+    path('get_validator/<str:fecha>', views.ConsultaVicidialStatusValidator.as_view(), name='VicidialStatusValidator'),
 ]

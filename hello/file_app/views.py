@@ -107,7 +107,7 @@ def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
         'campaign_id':campaign,
         'active':active,
         'list_description':descr,
-        'local_call_time':local_call_time
+        # 'custom_fields_copy':'202115'
     }
 
 
@@ -122,7 +122,7 @@ def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
 
 def ALe_Vici(phone,list_id,Vendor_lead,numip):
 
-    if int(numip) > 200:
+    if int(numip) == 206:
         # n = '150'
         connV = {
         'server' : '10.150.1.'+numip,
@@ -130,6 +130,14 @@ def ALe_Vici(phone,list_id,Vendor_lead,numip):
         'user' : 'soporte',
         'psw' : 'Bogota1234',
         'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number=9{4}&list_id={5}&vendor_lead_code={6}'}
+    elif int(numip) == 209:
+        # n = '150'
+        connV = {
+        'server' : '10.150.1.'+numip,
+        'agc' : 'vicidial',
+        'user' : 'soporte',
+        'psw' : 'Bogota1234',
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number={4}&list_id={5}&vendor_lead_code={6}'}
     else:
         # n = '152'
         connV = {
@@ -137,7 +145,7 @@ def ALe_Vici(phone,list_id,Vendor_lead,numip):
         'agc' : 'vicidial',
         'user' : 'secetina',
         'psw' : '1233692646',
-        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number=9{4}&list_id={5}&vendor_lead_code={6}'}
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number={4}&list_id={5}&vendor_lead_code={6}'}
 
     # url
     # with open("/home/manuel/Documentos/WiseR/Vicidial/Templates/ALe_URL.txt","r") as f1:
@@ -336,14 +344,6 @@ class FileSMS(APIView):
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# # consulta gestiones historicas
-# class ConsultaGestion(generics.ListCreateAPIView):
-#     def get_queryset(self):
-#         queryset = Gestiones.objects.using(self.kwargs['db'])\
-#             .filter(deudor_id=self.kwargs['deudor_id'])
-#         return queryset
-#     serializer_class = GestionSerializer
-
 # retorno de llamadas
 class RetornoLlamadas(APIView):
     def post(self, request, *args, **kwargs):
@@ -355,10 +355,12 @@ class RetornoLlamadas(APIView):
             col = list(data.keys())
             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
 
-            prefijo = Unidad.objects.using('public').get(id=self.kwargs['unidad']).prefijo
-
-            if prefijo == None:
-                return Response({'error':'Añadir el prefijo a la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+            if self.kwargs['unidad'] == 0:
+                prefijo = '9'
+            elif self.kwargs['unidad'] == 1:
+                prefijo = Unidad.objects.using('public').get(id=self.kwargs['unidad']).prefijo
+                if prefijo == None:
+                    return Response({'error':'Añadir el prefijo a la unidad'}, status=status.HTTP_400_BAD_REQUEST)
 
             url = 'http://10.150.1.206/vicidial/non_agent_api.php'
             
@@ -480,27 +482,6 @@ class FileCreacionTarea(APIView):
             col = list(data.keys())
             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
 
-            if int(numip) > 200:
-                #credenciales MySQL
-                connM = {
-                    'host' : '10.150.1.'+str(numip),
-                    'user':'desarrollo',
-                    'password':'soportE*8994',
-                    'database' : 'asterisk'}
-            else:
-                #credenciales MySQL
-                connM = {
-                    'host' : '10.150.1.'+str(numip),
-                    'user':'desarrollo',
-                    'password':'soportE*8994',
-                    'database' : 'asterisk'}
-            query = """
-            select max(list_id)
-            from asterisk.vicidial_lists vl
-            order by campaign_id desc;
-            """
-
-            list_id = pd.read_sql(query,mysql.connector.connect(**connM))
             now = datetime.now()
             print(now.strftime("%Y%m%d%H%M%S"))
             a = AL_Vici(now.strftime("%Y%m%d%H%M%S"),
@@ -514,24 +495,15 @@ class FileCreacionTarea(APIView):
             # print(list_id.iloc[0,0]+1,campaign,name,str(numip))
             # print(a)
 
-            if a.iloc[0,0].find('SUCCESS: add_list LIST HAS BEEN ADDED') > -1:
-                # print(a)
-                pass
-                # return Response({'result' : a.iloc[0,0]},status = status.HTTP_201_CREATED)
-            else:
-                # print(a)
+            if not a.iloc[0,0].find('SUCCESS: add_list LIST HAS BEEN ADDED') > -1:
                 return Response({'result' : a.iloc[0,0]},status = status.HTTP_400_BAD_REQUEST)
 
             for i in range(len(data)):
                 a = ALe_Vici(data['telefono'][i],
-                        list_id.iloc[0,0]+1,
+                        now.strftime("%Y%m%d%H%M%S"),
                         data['cedula'][i],
                         str(numip))
-                if a.iloc[0,0].find('SUCCESS: add_lead LEAD HAS BEEN ADDED') > -1:
-                    # print(a)
-                    pass
-                else:
-                    # print(a)
+                if not a.iloc[0,0].find('SUCCESS: add_lead LEAD HAS BEEN ADDED') > -1:
                     return Response({'result' : a.iloc[0,0]},status = status.HTTP_400_BAD_REQUEST)
                 
             if callf == 1:

@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 from django.http import JsonResponse
+from Vicidial.models import VicidialStatusValidator
 import pandas as pd
 import mysql.connector
 import requests
@@ -388,3 +389,35 @@ class AgentStatus(APIView):
             return Response({
                 'AgentStatus' : a[0]
             },status = status.HTTP_400_BAD_REQUEST)
+
+# consulta validacion de telefonos
+class ConsultaVicidialStatusValidator(APIView):
+    def get(self, request, *args, **kwargs):
+        #credenciales MySQL206
+        connM = {
+            'host' : '10.150.1.206',
+            'user':'desarrollo',
+            'password':'soportE*8994',
+            'database' : 'asterisk'
+            }
+        #query PostgreSQL
+        query ="""
+select substring(phone_number from 2 for 11)phone_number, vendor_lead_code, status, count(*) cantidad
+from asterisk.vicidial_list
+WHERE list_id = 20200811001
+AND CAST(modify_date as date) = '{0}'
+and SUBSTRING(phone_number from 1 for 1) = '9'
+and length(phone_number) = 11
+group by vendor_lead_code,substring(phone_number from 2 for 1),status
+order by vendor_lead_code,substring(phone_number from 2 for 1),status desc;
+        """
+        # print(pd.read_sql(query,mysql.connector.Connect(**connM)))
+        # print(pd.DataFrame(list(VicidialStatusValidator.objects.using('public').all().values())))
+        b = pd.merge(pd.read_sql(query.format(self.kwargs['fecha']),mysql.connector.Connect(**connM))
+                ,pd.DataFrame(list(VicidialStatusValidator.objects.using('public').all().values()))
+                ,how = 'left'
+                ,on = 'status'
+                ,indicator=False).to_json(orient='records')
+        
+        return JsonResponse(json.loads(b),safe=False)
+        # return Response({'AddUser' : 'ok'},status = status.HTTP_200_OK)

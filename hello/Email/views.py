@@ -92,7 +92,7 @@ class EmailTrap(APIView):
             'URL':response.json().get('link'),
             })
         plain_message = strip_tags(html_message)
-        subject = 'Pago PSE'
+        subject = 'Acuerdo de pago - Cobrando BPO'
 
         
         mail = EmailMultiAlternatives(

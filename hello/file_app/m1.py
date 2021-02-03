@@ -8,349 +8,114 @@
 from django.db import models
 
 
-class Acuerdos(models.Model):
-    acuerdo_id = models.BigIntegerField(primary_key=True)
-    deudor_id = models.IntegerField()
-    nombre_deudor = models.CharField(max_length=255)
-    fecha_solicitud = models.DateTimeField(blank=True, null=True)
-    mes_acuerdo = models.CharField(max_length=255)
-    tipo = models.TextField()  # This field type is a guess.
-    saldo_capital = models.BigIntegerField(blank=True, null=True)
-    plazo = models.IntegerField()
-    valor_cuota = models.CharField(max_length=255, blank=True, null=True)
-    tasa_interes = models.CharField(max_length=255, blank=True, null=True)
-    observaciones = models.TextField(blank=True, null=True)
+class Archivo(models.Model):
+    deudor_id = models.CharField(max_length=-1, blank=True, null=True)
+    nombre = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'acuerdos'
+        db_table = 'archivo'
 
 
-class AlternativasTipo(models.Model):
-    id = models.IntegerField(primary_key=True)
-    tipo = models.CharField(max_length=255)
-
-    class Meta:
-        managed = False
-        db_table = 'alternativas_tipo'
-
-
-class AsignacionActualArchivo(models.Model):
-    tipoid = models.CharField(max_length=150, blank=True, null=True)
-    deudor_id = models.CharField(max_length=150, blank=True, null=True)
-    asignacion_id = models.CharField(max_length=150, blank=True, null=True)
+class Asignacion(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    idunidad = models.ForeignKey('Unidad', models.DO_NOTHING, db_column='idunidad')
+    nombre = models.CharField(max_length=120)
+    tipoasignacion = models.IntegerField()
+    fechaapertura = models.DateField()
+    fechacierre = models.DateField()
+    fechacreacion = models.DateTimeField()
+    estado = models.BooleanField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'asignacion_actual_archivo'
+        db_table = 'asignacion'
 
 
-class AsignacionActualMongo(models.Model):
-    tipoid = models.CharField(max_length=150, blank=True, null=True)
-    deudor_id = models.CharField(max_length=150, blank=True, null=True)
-    asignacion_id = models.CharField(max_length=150, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'asignacion_actual_mongo'
-
-
-class Asignaciones(models.Model):
-    asignacion_id = models.BigIntegerField(primary_key=True)
-    unidad_id = models.BigIntegerField()
-    asignacion_nombre = models.CharField(max_length=100)
-    asignacion_fecha_creacion = models.DateField()
-    clientes = models.BigIntegerField()
-    obligaciones = models.BigIntegerField()
-    estado = models.BooleanField()
-    fecha_apertura = models.DateField()
-    fecha_cierre = models.DateField()
-
-    class Meta:
-        managed = False
-        db_table = 'asignaciones'
-
-
-class BaseTarea(models.Model):
-    base_tarea_id = models.BigIntegerField(primary_key=True)
-    tarea_id = models.BigIntegerField()
-    deudor_id = models.CharField(max_length=100)
-    obligacion_id = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'base_tarea'
-
-
-class BasesAsignacion(models.Model):
-    base_asignacion_id = models.BigIntegerField(primary_key=True)
-    asignacion = models.ForeignKey(Asignaciones, models.DO_NOTHING)
-    base_asignacion_nombre = models.CharField(max_length=-1)
-    fecha_carge = models.DateTimeField()
-    deudores = models.BigIntegerField()
-    obligaciones = models.BigIntegerField()
-    deudores_nuevos = models.BigIntegerField()
-    obligaciones_nuevas = models.BigIntegerField()
-    deudores_salientes = models.BigIntegerField()
-    obligaciones_salientes = models.BigIntegerField()
-    tipo_archivo = models.CharField(max_length=-1)
-    tipo_ingreso = models.CharField(max_length=-1, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'bases_asignacion'
-
-
-class CampaingList(models.Model):
-    id_list = models.IntegerField()
-    campaing_name = models.CharField(max_length=-1, blank=True, null=True)
-    unit_id = models.IntegerField(blank=True, null=True)
-    campaing_type = models.BooleanField()
-
-    class Meta:
-        managed = False
-        db_table = 'campaing_list'
-
-
-class Campos(models.Model):
-    name = models.CharField(max_length=255)
-    type = models.CharField(max_length=255)
-    visible = models.BooleanField(blank=True, null=True)
-    enable = models.BooleanField(blank=True, null=True)
-    main = models.BooleanField(blank=True, null=True)
-    unidad_id = models.IntegerField(blank=True, null=True)
-    display_name = models.CharField(max_length=-1, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'campos'
-
-
-class CamposObligatorios(models.Model):
-    id_campo = models.IntegerField(primary_key=True)
-    campo_nombre = models.CharField(max_length=50)
-
-    class Meta:
-        managed = False
-        db_table = 'campos_obligatorios'
-
-
-class Codigos(models.Model):
-    descripcion = models.CharField(max_length=-1, blank=True, null=True)
-    codigo = models.IntegerField(primary_key=True)
-    unidad = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'codigos'
-        unique_together = (('codigo', 'unidad'),)
-
-
-class Comites(models.Model):
-    comite_id = models.BigIntegerField(primary_key=True)
-    deudor_id = models.IntegerField()
-    nombre_deudor = models.CharField(max_length=255)
-    nombre_coordinador = models.CharField(max_length=255)
-    texto_comite = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'comites'
-
-
-class Compromisos(models.Model):
-    deudor_id = models.CharField(primary_key=True, max_length=-1)
-    obligacion_id = models.CharField(max_length=-1)
-    valor = models.BigIntegerField()
-    fecha_compromiso = models.DateField()
-    fecha_pago = models.DateField()
-    asesor = models.CharField(max_length=-1)
-
-    class Meta:
-        managed = False
-        db_table = 'compromisos'
-        unique_together = (('deudor_id', 'obligacion_id', 'valor', 'fecha_compromiso', 'fecha_pago', 'asesor'),)
-
-
-class ConsAsignacion(models.Model):
-    asignacion_id = models.BigIntegerField(primary_key=True)
-    fecha_registro = models.DateField()
-    obligacion_id = models.CharField(max_length=-1)
-    unidad_nombre = models.CharField(max_length=-1)
-    fecha_cargue = models.DateTimeField()
-    estado = models.CharField(max_length=-1)
-    deudor_id = models.CharField(max_length=-1)
-
-    class Meta:
-        managed = False
-        db_table = 'cons_asignacion'
-        unique_together = (('asignacion_id', 'fecha_registro', 'obligacion_id'),)
-
-
-class Correos(models.Model):
-    correo = models.CharField(primary_key=True, max_length=255)
-    deudor_id = models.CharField(max_length=100)
-    correo_id = models.BigIntegerField()
-    correo_estado = models.BooleanField()
-
-    class Meta:
-        managed = False
-        db_table = 'correos'
-        unique_together = (('correo', 'deudor_id'),)
-
-
-class DatosAdicionales(models.Model):
-    dato_adicional_id = models.BigIntegerField(primary_key=True)
-    obligacion = models.ForeignKey('Obligaciones', models.DO_NOTHING)
-    campo_archivo_nombre = models.CharField(max_length=255)
-    campo_archivo_valor = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'datos_adicionales'
-
-
-class Deudores(models.Model):
-    deudor_id = models.CharField(primary_key=True, max_length=100)
-    deudor_nombre = models.CharField(max_length=100, blank=True, null=True)
-    deudor_estado = models.BooleanField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'deudores'
-
-
-class Direcciones(models.Model):
-    direccion = models.CharField(primary_key=True, max_length=300)
-    deudor_id = models.CharField(max_length=100)
-    direccion_id = models.BigIntegerField()
-    direccion_estado = models.BooleanField()
-    departamento = models.CharField(max_length=-1, blank=True, null=True)
-    ciudad = models.CharField(max_length=-1, blank=True, null=True)
+class AuxIndicativos(models.Model):
+    departamento = models.CharField(primary_key=True, max_length=-1)
+    ciudad = models.CharField(max_length=-1)
     indicativo = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'direcciones'
-        unique_together = (('direccion', 'deudor_id'),)
+        db_table = 'aux_indicativos'
+        unique_together = (('departamento', 'ciudad'),)
 
 
-class Estructuras(models.Model):
-    estructura_id = models.BigIntegerField(primary_key=True)
-    estructura_nombre = models.CharField(max_length=100)
-    estructura_fecha_creacion = models.DateField()
-    unidad_id = models.IntegerField()
-    tipo = models.BigIntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'estructuras'
-
-
-class EstructurasCampos(models.Model):
-    est_campos_id = models.BigIntegerField(primary_key=True)
-    estructura = models.ForeignKey(Estructuras, models.DO_NOTHING)
-    campos_archivo = models.CharField(max_length=255)
-    tipo = models.IntegerField(blank=True, null=True)
-    valor = models.CharField(max_length=-1, blank=True, null=True)
-    estado = models.CharField(max_length=-1, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'estructuras_campos'
-
-
-class GestionPreguntas(models.Model):
+class Baseasignacion(models.Model):
+    idasignacion = models.ForeignKey(Asignacion, models.DO_NOTHING, db_column='idasignacion')
+    identificacion = models.CharField(max_length=30)
+    obligacion = models.CharField(max_length=30)
+    diasmora = models.IntegerField()
+    saldocapital = models.FloatField()
+    saldomora = models.FloatField()
+    saldocobrar = models.FloatField()
+    concatenacion = models.CharField(max_length=200)
+    nombre = models.CharField(max_length=100)
+    fechacreacion = models.DateTimeField(blank=True, null=True)
     id = models.BigAutoField(primary_key=True)
-    gestion_id = models.BigIntegerField()
-    pregunta1 = models.CharField(max_length=255, blank=True, null=True)
-    pregunta2 = models.CharField(max_length=255, blank=True, null=True)
-    pregunta3 = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'gestion_preguntas'
+        db_table = 'baseasignacion'
+        unique_together = (('obligacion', 'identificacion', 'idasignacion'),)
 
 
-class Gestiones(models.Model):
-    gestion_id = models.BigIntegerField(primary_key=True)
-    tarea_id = models.BigIntegerField()
-    gestion_fecha = models.DateTimeField(blank=True, null=True)
-    usuario_id = models.CharField(max_length=50)
-    deudor_id = models.CharField(max_length=100)
-    asignacion_id = models.BigIntegerField()
-    telefono = models.CharField(max_length=20, blank=True, null=True)
-    canal = models.CharField(max_length=20)
-    id_tipificacion = models.BigIntegerField()
-    descripcion = models.TextField(blank=True, null=True)
-    nom_contacto_tercero = models.CharField(max_length=-1, blank=True, null=True)
-    tel_adicional = models.BigIntegerField(blank=True, null=True)
-    ciudad_tel_adicional = models.CharField(max_length=-1, blank=True, null=True)
+class Cliente(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nombre = models.CharField(max_length=50)
+    nombredb = models.CharField(max_length=50)
+    fechacreacion = models.DateTimeField(blank=True, null=True)
+    schema_name = models.CharField(max_length=-1, blank=True, null=True)
+    logo = models.CharField(max_length=-1, blank=True, null=True)
+    user_group = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'gestiones'
+        db_table = 'cliente'
 
 
-class HelperChecks(models.Model):
-    type = models.CharField(max_length=255)
-    visible = models.BooleanField(blank=True, null=True)
-    checked = models.BooleanField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'helper_checks'
-
-
-class HelperInputs(models.Model):
-    type = models.CharField(max_length=255)
-    text = models.CharField(max_length=255, blank=True, null=True)
-    visible = models.BooleanField(blank=True, null=True)
-    hint = models.CharField(max_length=255, blank=True, null=True)
-    disabled = models.BooleanField(blank=True, null=True)
-    allow_state = models.BooleanField(blank=True, null=True)
-    state_on = models.CharField(max_length=255, blank=True, null=True)
-    state_off = models.CharField(max_length=255, blank=True, null=True)
+class Clienteusuario(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    idusuario = models.BigIntegerField()
+    idcliente = models.BigIntegerField()
 
     class Meta:
         managed = False
-        db_table = 'helper_inputs'
+        db_table = 'clienteusuario'
 
 
-class HelperItems(models.Model):
-    posicion = models.IntegerField()
-    check = models.ForeignKey(HelperChecks, models.DO_NOTHING)
-    label = models.ForeignKey('HelperLabels', models.DO_NOTHING)
-    input = models.ForeignKey(HelperInputs, models.DO_NOTHING)
-    contact = models.IntegerField(blank=True, null=True)
-    attempt = models.IntegerField(blank=True, null=True)
-    unit_id = models.IntegerField()
-    save_item = models.BooleanField(blank=True, null=True)
+class DefinicionTokens(models.Model):
+    id = models.BigAutoField()
+    token = models.CharField(max_length=-1)
+    tipo_conversacion = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'helper_items'
+        db_table = 'definicion_tokens'
 
 
-class HelperLabels(models.Model):
-    type = models.CharField(max_length=255)
-    text = models.CharField(max_length=255, blank=True, null=True)
-    visible = models.BooleanField(blank=True, null=True)
-    modal = models.ForeignKey('HelperModals', models.DO_NOTHING, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'helper_labels'
-
-
-class HelperModals(models.Model):
-    type = models.CharField(max_length=255)
-    text = models.CharField(max_length=255, blank=True, null=True)
-    enable = models.BooleanField(blank=True, null=True)
+class DmzChatbotCliente(models.Model):
+    cliente_id = models.IntegerField()
+    alias = models.CharField(max_length=255)
+    nombre_tabla = models.CharField(max_length=255)
 
     class Meta:
         managed = False
-        db_table = 'helper_modals'
+        db_table = 'dmz_chatbot_cliente'
+
+
+class HerramientasLimite(models.Model):
+    limite_id = models.AutoField(primary_key=True)
+    unidad_id = models.IntegerField()
+    herramienta = models.CharField(max_length=255)
+    cantidad = models.IntegerField()
+    fecha_limite = models.DateField()
+
+    class Meta:
+        managed = False
+        db_table = 'herramientas_limite'
 
 
 class HerramientasProcesos(models.Model):
@@ -362,10 +127,23 @@ class HerramientasProcesos(models.Model):
         db_table = 'herramientas_procesos'
 
 
+class HorariosWiser(models.Model):
+    horario_id = models.AutoField(primary_key=True)
+    unidad_id = models.IntegerField()
+    usuario_id = models.IntegerField()
+    fecha_dia = models.DateField()
+    hora_inicio = models.TimeField()
+    hora_fin = models.TimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'horarios_wiser'
+
+
 class IndicadoresGeneral(models.Model):
     id = models.IntegerField(primary_key=True)
-    codigo = models.CharField(max_length=255)
-    indicador = models.CharField(max_length=255)
+    codigo = models.CharField(max_length=-1, blank=True, null=True)
+    indicador = models.CharField(max_length=-1)
     indicador_contacto = models.IntegerField(blank=True, null=True)
     indicador_efectividad = models.IntegerField(blank=True, null=True)
 
@@ -375,108 +153,117 @@ class IndicadoresGeneral(models.Model):
         unique_together = (('id', 'indicador'),)
 
 
-class InsumoCallbot(models.Model):
-    insumo_id = models.BigIntegerField(primary_key=True)
+class Indicativos(models.Model):
+    ciudad_depto = models.CharField(max_length=255)
+    indicativo_bpo = models.IntegerField()
 
     class Meta:
         managed = False
-        db_table = 'insumo_callbot'
+        db_table = 'indicativos'
 
 
-class MejorGestion(models.Model):
-    deudor_id = models.CharField(primary_key=True, max_length=50)
-    mes = models.IntegerField()
-    anio = models.IntegerField()
-    indicador = models.CharField(max_length=50, blank=True, null=True)
-    repeticion = models.IntegerField(blank=True, null=True)
-    llamadas = models.IntegerField(blank=True, null=True)
-    sms = models.IntegerField(blank=True, null=True)
-    correos = models.IntegerField(blank=True, null=True)
-    gescall = models.IntegerField(blank=True, null=True)
+class Indicators(models.Model):
+    unit_id = models.CharField(primary_key=True, max_length=-1)
+    user_id = models.CharField(max_length=-1)
+    full_name = models.CharField(max_length=-1, blank=True, null=True)
+    unit_name = models.CharField(max_length=-1, blank=True, null=True)
+    customer_name = models.CharField(max_length=-1, blank=True, null=True)
+    fec = models.DateField()
+    contacts = models.IntegerField(blank=True, null=True)
+    commitment_port = models.IntegerField(blank=True, null=True)
+    commitment_sales = models.IntegerField(blank=True, null=True)
+    calls = models.IntegerField(blank=True, null=True)
+    pause_sec = models.IntegerField(blank=True, null=True)
+    break_field = models.IntegerField(db_column='break', blank=True, null=True)  # Field renamed because it was a Python reserved word.
+    active_pause = models.IntegerField(blank=True, null=True)
+    restroom = models.IntegerField(blank=True, null=True)
+    failure = models.IntegerField(blank=True, null=True)
+    cons_coord = models.IntegerField(blank=True, null=True)
+    lunch = models.IntegerField(blank=True, null=True)
     whatsapp = models.IntegerField(blank=True, null=True)
-    no_contacto = models.IntegerField(blank=True, null=True)
-    fecha_gestion = models.DateTimeField(blank=True, null=True)
-    visitas = models.IntegerField(blank=True, null=True)
-    phone = models.BigIntegerField(blank=True, null=True)
-    asesor = models.CharField(max_length=-1, blank=True, null=True)
-    fecha_primer_gestion = models.DateField(blank=True, null=True)
-    fecha_ultima_gestion = models.DateField(blank=True, null=True)
-    ultimo_alo = models.DateTimeField(blank=True, null=True)
+    front = models.IntegerField(blank=True, null=True)
+    folder = models.IntegerField(blank=True, null=True)
+    training = models.IntegerField(blank=True, null=True)
+    feedback = models.IntegerField(blank=True, null=True)
+    marking = models.IntegerField(blank=True, null=True)
+    nxdial = models.IntegerField(blank=True, null=True)
+    co = models.IntegerField(blank=True, null=True)
+    pause = models.IntegerField(blank=True, null=True)
+    delay = models.IntegerField(blank=True, null=True)
+    typing = models.IntegerField(blank=True, null=True)
+    wait_sec = models.IntegerField(blank=True, null=True)
+    talk_sec = models.IntegerField(blank=True, null=True)
+    dispo_sec = models.IntegerField(blank=True, null=True)
+    dead_sec = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'mejor_gestion'
-        unique_together = (('deudor_id', 'mes', 'anio'),)
+        db_table = 'indicators'
+        unique_together = (('unit_id', 'user_id', 'fec'),)
 
 
-class MejorGestionDia(models.Model):
-    deudor_id = models.CharField(primary_key=True, max_length=50)
-    dia = models.IntegerField()
-    indicador = models.CharField(max_length=50, blank=True, null=True)
-    repeticion = models.IntegerField(blank=True, null=True)
+class ManagementIndicators(models.Model):
+    indicator_id = models.BigIntegerField()
+    indicator_cod = models.CharField(max_length=-1)
+    indicator_desc = models.CharField(max_length=-1)
+    contactability = models.IntegerField()
+    effectiveness = models.IntegerField()
+    ranking = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'management_indicators'
+
+
+class Metas(models.Model):
+    meta_productividad = models.CharField(max_length=255)
+    unidad = models.ForeignKey('Unidad', models.DO_NOTHING)
     llamadas = models.IntegerField(blank=True, null=True)
-    sms = models.IntegerField(blank=True, null=True)
-    correos = models.IntegerField(blank=True, null=True)
-    gescall = models.IntegerField(blank=True, null=True)
-    whatsapp = models.IntegerField(blank=True, null=True)
-    no_contacto = models.IntegerField(blank=True, null=True)
-    fecha_gestion = models.DateTimeField(blank=True, null=True)
-    visitas = models.IntegerField(blank=True, null=True)
-    phone = models.BigIntegerField(blank=True, null=True)
-    asesor = models.CharField(max_length=-1, blank=True, null=True)
+    clientes = models.IntegerField(blank=True, null=True)
+    contacto = models.IntegerField(blank=True, null=True)
+    compromisos = models.FloatField(blank=True, null=True)
+    fecha = models.DateField(blank=True, null=True)
+    tipo = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'mejor_gestion_dia'
-        unique_together = (('deudor_id', 'dia'),)
+        db_table = 'metas'
 
 
-class NombreRama(models.Model):
-    id = models.IntegerField(primary_key=True)
+class ModulosWiser(models.Model):
+    modulo = models.CharField(max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 'modulos_wiser'
+
+
+class Mongo(models.Model):
+    deudor_id = models.CharField(max_length=-1, blank=True, null=True)
     nombre = models.CharField(max_length=-1, blank=True, null=True)
-    unidad = models.IntegerField()
 
     class Meta:
         managed = False
-        db_table = 'nombre_rama'
-        unique_together = (('id', 'unidad'),)
+        db_table = 'mongo'
 
 
-class NombresPreguntas(models.Model):
-    unidad_id = models.IntegerField(blank=True, null=True)
-    pregunta = models.CharField(max_length=255)
-    nombre = models.CharField(max_length=255)
-
-    class Meta:
-        managed = False
-        db_table = 'nombres_preguntas'
-
-
-class Obligaciones(models.Model):
-    obligacion_id = models.CharField(primary_key=True, max_length=100)
-    deudor = models.ForeignKey(Deudores, models.DO_NOTHING)
-    obligacion_estado = models.BooleanField()
+class NotificacionesWiser(models.Model):
+    usuario = models.ForeignKey('UsuariosWiser', models.DO_NOTHING)
+    is_read = models.BooleanField()
+    is_hidden = models.BooleanField()
+    title = models.CharField(max_length=255)
+    message = models.CharField(max_length=255)
+    fecha_creacion = models.DateTimeField()
+    fecha_actualizacion = models.DateTimeField()
 
     class Meta:
         managed = False
-        db_table = 'obligaciones'
-
-
-class ObligacionesAsignacion(models.Model):
-    oblig_asg_id = models.BigIntegerField(primary_key=True)
-    obligacion = models.ForeignKey(Obligaciones, models.DO_NOTHING)
-    asignacion = models.ForeignKey(Asignaciones, models.DO_NOTHING)
-    estado = models.CharField(max_length=50)
-    fecha_actualizacion = models.DateField()
-
-    class Meta:
-        managed = False
-        db_table = 'obligaciones_asignacion'
+        db_table = 'notificaciones_wiser'
 
 
 class Pagos(models.Model):
-    pago_id = models.BigIntegerField(primary_key=True)
-    deudor_id = models.CharField(max_length=100, blank=True, null=True)
+    pago_id = models.BigAutoField(primary_key=True)
+    deudor_identificacion = models.CharField(max_length=100, blank=True, null=True)
     obligacion_id = models.CharField(max_length=100, blank=True, null=True)
     pago_valor = models.BigIntegerField(blank=True, null=True)
     pago_fecha = models.DateField(blank=True, null=True)
@@ -484,280 +271,178 @@ class Pagos(models.Model):
     class Meta:
         managed = False
         db_table = 'pagos'
-        unique_together = (('obligacion_id', 'pago_fecha'),)
 
 
-class Promesas(models.Model):
-    promesa_id = models.BigIntegerField(primary_key=True)
-    gestion = models.ForeignKey(Gestiones, models.DO_NOTHING)
-    obligacion_id = models.CharField(max_length=100)
-    promesa_valor = models.BigIntegerField()
-    promesa_fecha_creacion = models.DateField()
-    promesa_fecha_acordada = models.DateField()
-    tipo = models.CharField(max_length=-1)
-    cuotas = models.IntegerField(blank=True, null=True)
-    pagon_inicial = models.BigIntegerField(blank=True, null=True)
-    valor_cuota = models.BigIntegerField(blank=True, null=True)
-    porcentaje_descuento = models.IntegerField(blank=True, null=True)
-    valor_descuento = models.BigIntegerField(blank=True, null=True)
-    valor_pago_con_descuento = models.BigIntegerField(blank=True, null=True)
+class PerfilesWiser(models.Model):
+    perfil = models.CharField(max_length=255)
 
     class Meta:
         managed = False
-        db_table = 'promesas'
+        db_table = 'perfiles_wiser'
 
 
-class TareaManual(models.Model):
-    usuario_id = models.BigIntegerField()
-    deudor_id = models.CharField(max_length=255)
-    tarea_id = models.IntegerField(blank=True, null=True)
-    codigo = models.IntegerField(blank=True, null=True)
-    descripcion = models.CharField(max_length=255, blank=True, null=True)
+class PermisosWiser(models.Model):
+    perfil = models.ForeignKey(PerfilesWiser, models.DO_NOTHING)
+    modulo = models.ForeignKey(ModulosWiser, models.DO_NOTHING)
 
     class Meta:
         managed = False
-        db_table = 'tarea_manual'
+        db_table = 'permisos_wiser'
 
 
-class Tareas(models.Model):
-    tarea_id = models.BigIntegerField(primary_key=True)
-    tarea_fecha_creacion = models.DateTimeField()
-    unidad_id = models.BigIntegerField()
-    registros = models.BigIntegerField()
-    clientes = models.BigIntegerField()
-    obligaciones = models.BigIntegerField()
-    tipo = models.CharField(max_length=-1, blank=True, null=True)
-    nombre = models.CharField(max_length=-1, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'tareas'
-
-
-class Telefonos(models.Model):
-    telefono = models.BigIntegerField(primary_key=True)
-    deudor_id = models.CharField(max_length=100)
-    telefono_id = models.BigIntegerField()
-    telefono_tipo = models.CharField(max_length=10, blank=True, null=True)
-    telefono_estado = models.BooleanField()
-    departamento = models.CharField(max_length=-1, blank=True, null=True)
-    ciudad = models.CharField(max_length=-1, blank=True, null=True)
-    indicativo = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'telefonos'
-        unique_together = (('telefono', 'deudor_id'),)
-
-
-class TelefonosPositivos(models.Model):
-    deudor_id = models.CharField(primary_key=True, max_length=-1)
-    telefono = models.BigIntegerField()
-    marcaciones = models.IntegerField()
-    fec_ultima_marcacion = models.DateField()
-
-    class Meta:
-        managed = False
-        db_table = 'telefonos_positivos'
-        unique_together = (('deudor_id', 'telefono'),)
-
-
-class TelefonosTmp(models.Model):
-    telefono_id = models.BigIntegerField(blank=True, null=True)
-    telefono = models.CharField(max_length=20, blank=True, null=True)
-    deudor_id = models.CharField(max_length=100, blank=True, null=True)
-    telefono_tipo = models.CharField(max_length=10, blank=True, null=True)
-    telefono_estado = models.BooleanField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'telefonos_tmp'
-
-
-class Tipificaciones(models.Model):
-    codigo01 = models.IntegerField(primary_key=True)
-    codigo02 = models.IntegerField()
-    codigo03 = models.IntegerField()
-    codigo04 = models.IntegerField()
-    codigo05 = models.IntegerField()
-    codigo06 = models.IntegerField()
-    codigo07 = models.IntegerField()
-    codigo08 = models.IntegerField()
-    codigo09 = models.IntegerField()
-    codigo10 = models.IntegerField()
-    prioridad = models.IntegerField(blank=True, null=True)
-    indicador = models.IntegerField(blank=True, null=True)
-    id = models.IntegerField()
-    unidad = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'tipificaciones'
-        unique_together = (('codigo01', 'codigo02', 'codigo03', 'codigo04', 'codigo05', 'codigo06', 'codigo07', 'codigo08', 'codigo09', 'codigo10', 'unidad'),)
-
-
-class Tipificaciones(models.Model):
-    codigo01 = models.IntegerField(blank=True, null=True)
-    codigo02 = models.IntegerField(blank=True, null=True)
-    codigo03 = models.IntegerField(blank=True, null=True)
-    codigo04 = models.IntegerField(blank=True, null=True)
-    codigo05 = models.IntegerField(blank=True, null=True)
-    codigo06 = models.IntegerField(blank=True, null=True)
-    codigo07 = models.IntegerField(blank=True, null=True)
-    codigo08 = models.IntegerField(blank=True, null=True)
-    codigo09 = models.IntegerField(blank=True, null=True)
-    codigo10 = models.IntegerField(blank=True, null=True)
-    prioridad = models.IntegerField(blank=True, null=True)
-    indicador = models.IntegerField(blank=True, null=True)
-    id = models.IntegerField(blank=True, null=True)
+class Productividad(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    nombre = models.CharField(max_length=255)
+    clientes = models.IntegerField()
+    contactos = models.IntegerField(blank=True, null=True)
+    compromisos = models.IntegerField(blank=True, null=True)
+    llamadas = models.IntegerField(blank=True, null=True)
+    conversion1 = models.CharField(max_length=255, blank=True, null=True)
+    conversion2 = models.CharField(max_length=255, blank=True, null=True)
+    vicidial = models.CharField(max_length=255, blank=True, null=True)
+    login = models.CharField(max_length=255, blank=True, null=True)
     unidad = models.IntegerField(blank=True, null=True)
+    fecha = models.DateField()
 
     class Meta:
         managed = False
-        db_table = 'tipificaciones_'
+        db_table = 'productividad'
+        unique_together = (('id', 'fecha'),)
 
 
-class TipificacionesHerramientas(models.Model):
-    id = models.IntegerField(primary_key=True)
-    herramienta = models.CharField(max_length=-1)
-
-    class Meta:
-        managed = False
-        db_table = 'tipificaciones_herramientas'
-        unique_together = (('id', 'herramienta'),)
-
-
-class TipoCliente(models.Model):
-    deudor_id = models.CharField(max_length=100, blank=True, null=True)
-    tipo_cliente = models.TextField(blank=True, null=True)
+class Queryfinal(models.Model):
+    deudor_id = models.CharField(max_length=-1, blank=True, null=True)
+    nombre = models.CharField(max_length=-1, blank=True, null=True)
+    estado = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'tipo_cliente'
+        db_table = 'queryfinal'
 
 
-class TiposCargue(models.Model):
-    tipo_cargue_id = models.IntegerField(primary_key=True)
-    tipo_cargue = models.CharField(max_length=20)
-
-    class Meta:
-        managed = False
-        db_table = 'tipos_cargue'
-
-
-class TmpComovamos(models.Model):
-    id_tipificacion = models.BigIntegerField(blank=True, null=True)
-    gestion_id = models.BigIntegerField(blank=True, null=True)
-    tarea_id = models.BigIntegerField(blank=True, null=True)
-    gestion_fecha = models.DateTimeField(blank=True, null=True)
-    usuario_id = models.CharField(max_length=50, blank=True, null=True)
-    deudor_id = models.CharField(max_length=100, blank=True, null=True)
-    asignacion_id = models.BigIntegerField(blank=True, null=True)
-    telefono = models.CharField(max_length=20, blank=True, null=True)
-    canal = models.CharField(max_length=20, blank=True, null=True)
-    prioridad = models.IntegerField(blank=True, null=True)
-    indicador = models.CharField(max_length=-1, blank=True, null=True)
+class ReporteCampos(models.Model):
+    reporte = models.ForeignKey('Reportes', models.DO_NOTHING)
+    nombre_tabla = models.CharField(max_length=255)
+    columna_tabla = models.CharField(max_length=255)
+    columna_reporte = models.CharField(max_length=255, blank=True, null=True)
+    visible = models.BooleanField(blank=True, null=True)
+    filter = models.BooleanField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'tmp_comovamos'
+        db_table = 'reporte_campos'
 
 
-class TmpPruebas(models.Model):
-    ident = models.CharField(max_length=-1, blank=True, null=True)
-    prioridad = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'tmp_pruebas'
-
-
-class Unicos(models.Model):
-    obligacion_id = models.CharField(max_length=100, blank=True, null=True)
-    deudor_id = models.CharField(max_length=100, blank=True, null=True)
-    unico = models.IntegerField(blank=True, null=True)
+class Reportes(models.Model):
+    nombre = models.CharField(max_length=255)
+    cliente = models.CharField(max_length=255)
 
     class Meta:
         managed = False
-        db_table = 'unicos'
+        db_table = 'reportes'
 
 
-class Unidades(models.Model):
-    unidad_id = models.BigIntegerField(primary_key=True)
-    unidad_nombre = models.CharField(unique=True, max_length=100, blank=True, null=True)
-    unidad_estado = models.BooleanField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'unidades'
-
-
-class WolkCbot(models.Model):
-    id_chat = models.CharField(max_length=-1, blank=True, null=True)
-    channel = models.CharField(max_length=-1, blank=True, null=True)
-    routing_point = models.IntegerField(blank=True, null=True)
-    date = models.DateTimeField(blank=True, null=True)
-    cust_name = models.CharField(max_length=-1, blank=True, null=True)
-    cust_email = models.CharField(max_length=-1, blank=True, null=True)
-    cust_phone = models.BigIntegerField(blank=True, null=True)
-    cust_query = models.CharField(max_length=-1, blank=True, null=True)
-    chatbot_answer = models.CharField(max_length=-1, blank=True, null=True)
+class ResultadoLlamada(models.Model):
+    id_resultado = models.BigAutoField()
+    id_asignacion = models.BigIntegerField()
+    identificacion = models.CharField(max_length=-1)
+    tipificacion = models.CharField(max_length=-1)
+    hora_inicio = models.DateTimeField()
+    hora_fin = models.DateTimeField()
 
     class Meta:
         managed = False
-        db_table = 'wolk_cbot'
+        db_table = 'resultado_llamada'
 
 
-class WolkChats(models.Model):
-    chat_id = models.BigIntegerField(blank=True, null=True)
-    channel = models.CharField(max_length=-1, blank=True, null=True)
-    chat_date = models.DateTimeField(blank=True, null=True)
-    user_name = models.CharField(max_length=-1, blank=True, null=True)
-    user_email = models.CharField(max_length=-1, blank=True, null=True)
-    user_phone = models.BigIntegerField(blank=True, null=True)
-    user_chat_chars = models.IntegerField(blank=True, null=True)
-    agent_id = models.BigIntegerField(blank=True, null=True)
-    agent_name = models.CharField(max_length=-1, blank=True, null=True)
-    agent_chat_chars = models.BigIntegerField(blank=True, null=True)
-    chat_duration = models.BigIntegerField(blank=True, null=True)
-    cod_act = models.CharField(max_length=-1, blank=True, null=True)
-    comment = models.CharField(max_length=-1, blank=True, null=True)
-    id_customer = models.CharField(max_length=-1, blank=True, null=True)
-    agent_skill = models.IntegerField(blank=True, null=True)
-    user_id = models.CharField(max_length=-1, blank=True, null=True)
-    sentiment = models.CharField(max_length=-1, blank=True, null=True)
+class SesionesWiser(models.Model):
+    sesion_id = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey('UsuariosWiser', models.DO_NOTHING)
+    tipo = models.TextField()  # This field type is a guess.
+    fecha = models.DateField()
+    hora = models.TimeField()
 
     class Meta:
         managed = False
-        db_table = 'wolk_chats'
+        db_table = 'sesiones_wiser'
 
 
-class WolkConv(models.Model):
-    chat_id = models.IntegerField(blank=True, null=True)
-    channel = models.CharField(max_length=-1, blank=True, null=True)
-    from_msg = models.CharField(max_length=-1, blank=True, null=True)
-    from_field = models.CharField(db_column='from_', max_length=-1, blank=True, null=True)  # Field renamed because it ended with '_'.
-    to_field = models.CharField(db_column='to_', max_length=-1, blank=True, null=True)  # Field renamed because it ended with '_'.
-    time = models.DateTimeField(blank=True, null=True)
-    msg = models.CharField(max_length=-1, blank=True, null=True)
-    sentiment = models.CharField(max_length=-1, blank=True, null=True)
+class Telefono(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    idasignacion = models.BigIntegerField()
+    identificacion = models.CharField(max_length=30)
+    numerotelefono = models.CharField(max_length=30)
+    fechacreacion = models.DateTimeField()
 
     class Meta:
         managed = False
-        db_table = 'wolk_conv'
+        db_table = 'telefono'
 
 
-class WolkManage(models.Model):
-    phone = models.BigIntegerField(primary_key=True)
-    manage_date = models.DateTimeField()
-    deudor_id = models.BigIntegerField(blank=True, null=True)
+class Unidad(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    idcliente = models.ForeignKey(Cliente, models.DO_NOTHING, db_column='idcliente')
+    nombre = models.CharField(max_length=150)
+    fechacreacion = models.DateTimeField()
+    vicidial = models.CharField(max_length=120, blank=True, null=True)
+    prefijo = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'unidad'
+
+
+class Unidadusuario(models.Model):
+    idusuario = models.BigIntegerField()
+    idunidad = models.IntegerField()
+    unidad_productividad = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'unidadusuario'
+
+
+class Usuario(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    usuariowin = models.CharField(max_length=50)
+    nombre = models.CharField(max_length=150)
+    extension = models.CharField(max_length=15, blank=True, null=True)
+    cedula = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'usuario'
+
+
+class UsuariosWiser(models.Model):
+    nombre = models.CharField(max_length=255)
+    perfil = models.ForeignKey(PerfilesWiser, models.DO_NOTHING)
+    password = models.CharField(max_length=255)
+    estado = models.BooleanField(blank=True, null=True)
+    fechacreacion = models.DateTimeField(blank=True, null=True)
+    vicidial = models.CharField(max_length=-1, blank=True, null=True)
+    password_expiration = models.DateField(blank=True, null=True)
+    restore_password = models.BooleanField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'usuarios_wiser'
+
+
+class VicidialPause(models.Model):
+    id = models.IntegerField(blank=True, null=True)
+    pause = models.CharField(primary_key=True, max_length=-1)
+
+    class Meta:
+        managed = False
+        db_table = 'vicidial_pause'
+
+
+class VicidialStatusValidator(models.Model):
     status = models.CharField(max_length=-1, blank=True, null=True)
-    commit_date = models.DateTimeField(blank=True, null=True)
-    valor = models.CharField(max_length=-1, blank=True, null=True)
-    dues = models.CharField(max_length=-1, blank=True, null=True)
-    reason_nopay = models.CharField(max_length=-1, blank=True, null=True)
+    description = models.CharField(max_length=-1, blank=True, null=True)
+    call_type = models.CharField(max_length=-1, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'wolk_manage'
-        unique_together = (('phone', 'manage_date'),)
+        db_table = 'vicidial_status_validator'
