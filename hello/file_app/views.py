@@ -357,10 +357,11 @@ class RetornoLlamadas(APIView):
 
             if self.kwargs['unidad'] == 0:
                 prefijo = '9'
-            elif self.kwargs['unidad'] == 1:
+            elif self.kwargs['unidad'] != 0:
                 prefijo = Unidad.objects.using('public').get(id=self.kwargs['unidad']).prefijo
                 if prefijo == None:
                     return Response({'error':'Añadir el prefijo a la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+            # print(prefijo)
 
             url = 'http://10.150.1.206/vicidial/non_agent_api.php'
             
@@ -382,7 +383,8 @@ class RetornoLlamadas(APIView):
                                                             registros = len(data),
                                                             clientes = len(data.cedula.drop_duplicates()),
                                                             obligaciones = 0,
-                                                            tipo = 'RETURN')
+                                                            tipo = 'RETURN',
+                                                            list_id = 0)
             
             return Response(file_serializer.data, status=status.HTTP_200_OK)
 
@@ -518,7 +520,8 @@ class FileCreacionTarea(APIView):
                                                 clientes = len(data.cedula.drop_duplicates()),
                                                 obligaciones = 0,
                                                 tipo = tipo,
-                                                nombre = name)
+                                                nombre = name,
+                                                list_id = list_id)
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -648,7 +651,7 @@ class ConsultaTareasReturn(generics.ListCreateAPIView):
         return queryset
     serializer_class = TareasSerializer
 
-# consulta tareas Return
+# consulta suma de herramienta
 class ConsultaTareasSum(APIView):
     def get(self, request, *args, **kwargs):
         queryset = Tareas.objects.using(self.kwargs['db'])\

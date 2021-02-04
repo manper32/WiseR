@@ -35,7 +35,8 @@ class TareasSerializer(serializers.ModelSerializer):
       'clientes',
       'obligaciones',
       'tipo',
-      'nombre')
+      'nombre',
+      'list_id')
 
 class VicidialPauseSerializer(serializers.ModelSerializer):
   class Meta():
