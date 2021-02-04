@@ -384,7 +384,7 @@ class RetornoLlamadas(APIView):
                                                             clientes = len(data.cedula.drop_duplicates()),
                                                             obligaciones = 0,
                                                             tipo = 'RETURN',
-                                                            list_id = 0)
+                                                            list_id = '20200811001')
             
             return Response(file_serializer.data, status=status.HTTP_200_OK)
 
@@ -485,7 +485,7 @@ class FileCreacionTarea(APIView):
             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
 
             now = datetime.now()
-            print(now.strftime("%Y%m%d%H%M%S"))
+            # print(now.strftime("%Y%m%d%H%M%S"))
             a = AL_Vici(now.strftime("%Y%m%d%H%M%S"),
                         campaign.replace(r'\n',''),
                         'Y',#active,
@@ -521,7 +521,7 @@ class FileCreacionTarea(APIView):
                                                 obligaciones = 0,
                                                 tipo = tipo,
                                                 nombre = name,
-                                                list_id = list_id)
+                                                list_id = now.strftime("%Y%m%d%H%M%S"))
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -574,16 +574,46 @@ class ConsultaGestion(APIView):
 
 # consulta gestiones historicas
 class ConsultaTareaCall(generics.ListCreateAPIView):
-    def get_queryset(self):
-        queryset = Tareas.objects.using(self.kwargs['db'])\
+    def get(self, request, *args, **kwargs):
+        queryset = pd.DataFrame(list(Tareas.objects.using(self.kwargs['db'])\
             .filter(tarea_fecha_creacion__gte= datetime.now().replace(day=1
                                                                             ,hour=0
                                                                             ,minute=0
                                                                             ,second=0
                                                                             ,microsecond=0)
-                    ,tipo='CALL')
-        return queryset
-    serializer_class = TareasSerializer
+                    ,tipo='CALL').values()))
+                #credenciales MySQL120
+        connM = {
+            'host' : '10.150.1.'+self.kwargs['numip'],
+            'user':'desarrollo',
+            'password':'soportE*8994',
+            'database' : 'asterisk'
+        }
+        query = """SELECT
+t2.list_name
+,t1.list_id
+,sum(case when t1.status in ('MS','SMS','NE''NC','BZ','MST','CO','PSC','FLL','FL','ME','FAS','TRA','PU','NC') then 1 else 0 end ) no_contacto
+,sum(case when t1.status in ('PS','PSC') then 1 else 0 end ) presion
+,sum(case when t1.status in ('SG') then 1 else 0 end ) seguimiento
+,sum(case when t1.status in ('CP','CR') then 1 else 0 end ) compromiso
+,sum(case when t1.status in ('NG') then 1 else 0 end ) negociacion 
+FROM asterisk.vicidial_list t1
+left join asterisk.vicidial_lists t2
+on t1.list_id = t2.list_id 
+-- where t1.list_id = 29012021123456;
+-- WHERE t2.list_name = 'ADELANTOS NVO 2901'
+where CAST(t1.modify_date as date) >= SUBDATE(CURRENT_DATE(), DAYOFMONTH(CURRENT_DATE()) - 1)
+GROUP by t1.list_id
+order by t1.list_id;
+        """
+        b= pd.merge(queryset
+                    ,pd.read_sql(query,mysql.connector.Connect(**connM))
+                    ,how = "left"
+                    ,on = 'list_id'
+                    ,indicator=False).to_json(orient='records')
+        # print(b)
+        return JsonResponse(json.loads(b),safe=False)
+        # return Response({'status':'ok'}, status=status.HTTP_201_CREATED)
 
 # consulta tarea SMS
 class ConsultaTareaSMS(generics.ListCreateAPIView):

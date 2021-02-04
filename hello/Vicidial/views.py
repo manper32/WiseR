@@ -433,7 +433,8 @@ class VicidialListIndicators(APIView):
             'database' : 'asterisk'
         }
         query = """SELECT
-t1.list_id
+t2.list_name
+,t1.list_id
 ,sum(case when t1.status in ('MS','SMS','NE''NC','BZ','MST','CO','PSC','FLL','FL','ME','FAS','TRA','PU','NC') then 1 else 0 end ) no_contacto
 ,sum(case when t1.status in ('PS','PSC') then 1 else 0 end ) presion
 ,sum(case when t1.status in ('SG') then 1 else 0 end ) seguimiento
