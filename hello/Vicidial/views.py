@@ -421,3 +421,32 @@ order by vendor_lead_code,substring(phone_number from 2 for 1),status desc;
         
         return JsonResponse(json.loads(b),safe=False)
         # return Response({'AddUser' : 'ok'},status = status.HTTP_200_OK)
+
+# consulta indicadores de tareas
+class VicidialListIndicators(APIView):
+    def get(self, request, *args, **kwargs):
+        #credenciales MySQL120
+        connM = {
+            'host' : '10.150.1.'+self.kwargs['numip'],
+            'user':'desarrollo',
+            'password':'soportE*8994',
+            'database' : 'asterisk'
+        }
+        query = """SELECT
+t1.list_id
+,sum(case when t1.status in ('MS','SMS','NE''NC','BZ','MST','CO','PSC','FLL','FL','ME','FAS','TRA','PU','NC') then 1 else 0 end ) no_contacto
+,sum(case when t1.status in ('PS','PSC') then 1 else 0 end ) presion
+,sum(case when t1.status in ('SG') then 1 else 0 end ) seguimiento
+,sum(case when t1.status in ('CP','CR') then 1 else 0 end ) compromiso
+,sum(case when t1.status in ('NG') then 1 else 0 end ) negociacion 
+FROM asterisk.vicidial_list t1
+left join asterisk.vicidial_lists t2
+on t1.list_id = t2.list_id 
+-- where t1.list_id = 29012021123456;
+-- WHERE t2.list_name = 'ADELANTOS NVO 2901'
+where CAST(t1.modify_date as date) >= SUBDATE(CURRENT_DATE(), DAYOFMONTH(CURRENT_DATE()) - 1)
+GROUP by t1.list_id
+order by t1.list_id;
+        """
+        b = pd.read_sql(query,mysql.connector.Connect(**connM)).to_json(orient='records')
+        return JsonResponse(json.loads(b),safe=False)
