@@ -98,12 +98,23 @@ DATABASES = {
         'OPTIONS': {
             'options': '-c search_path=public'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
+        'NAME': 'postgres',
+        'USER' : 'postgres',
+        'PASSWORD' : 'cobrando.bi.2020',
+        'HOST' : '10.150.1.74',
         'PORT' : '5432'
     },
+    # 'public': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'OPTIONS': {
+    #         'options': '-c search_path=public'
+    #     },
+    #     'NAME': 'login',
+    #     'USER' : 'bi',
+    #     'PASSWORD' : 'juanitoMeToco2020',
+    #     'HOST' : '10.150.1.77',
+    #     'PORT' : '5432'
+    # },
     'Bogota': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
@@ -217,14 +228,25 @@ DATABASES = {
     'Cartera propia': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_propia'
+            'options': '-c search_path=cbpo_cartera_propia'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
+        'NAME': 'postgres',
+        'USER' : 'postgres',
+        'PASSWORD' : 'cobrando.bi.2020',
+        'HOST' : '10.150.1.74',
         'PORT' : '5432'
     },
+    # 'Cartera propia': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'OPTIONS': {
+    #         'options': '-c search_path=cbpo_propia'
+    #     },
+    #     'NAME': 'login',
+    #     'USER' : 'bi',
+    #     'PASSWORD' : 'juanitoMeToco2020',
+    #     'HOST' : '10.150.1.77',
+    #     'PORT' : '5432'
+    # },
     'Qnt': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {

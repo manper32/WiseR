@@ -307,7 +307,7 @@ class FileTipi(APIView):
 class FileSMS(APIView):
 
     parser_classes = (MultiPartParser, FormParser)
-    def post(self, request, unidad, tipi):
+    def post(self, request, unidad):
         file_serializer = FileSerializer(data=request.data)
         if file_serializer.is_valid():
             # file_serializer.save()
@@ -322,8 +322,18 @@ class FileSMS(APIView):
                                                             clientes = len(data.cedula.drop_duplicates()),
                                                             obligaciones = 0,
                                                             tipo = 'SMS')
-            asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
-                                                                        unidad = unidad)
+            
+            try:
+                asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
+                                                                                    unidad = unidad)
+            except:
+                return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
+
+            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).filter(
+                herramienta='sms'
+            ).values('id')
+            # asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
+                                                                        # unidad = unidad)
             
             for i in range(len(data)):
                 Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
@@ -332,7 +342,7 @@ class FileSMS(APIView):
                 ,asignacion_id = asignacion.asignacion_id
                 ,telefono = data['telefono'][i]
                 ,canal = 'SMS'
-                ,id_tipificacion = tipi
+                ,id_tipificacion = tipificacion
                 ,descripcion = data['mensaje'][i])
             # print(data)
             
