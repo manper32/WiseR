@@ -4,11 +4,39 @@ from rest_framework import status
 from django.shortcuts import render
 from django.http import JsonResponse
 from Vicidial.models import VicidialStatusValidator
+from django.http import HttpResponse
+from openpyxl import Workbook
 import pandas as pd
 import mysql.connector
 import requests
 import time
 import json
+
+def excel(fn,name):
+    wb = Workbook()
+    ws = wb.active
+
+    k = 0
+    a = pd.DataFrame(fn.columns)
+
+    for k in range(a.shape[0]):
+        ws.cell(row = 1, column = k+1).value = a.iloc[k,0]
+
+    i=0
+    j=0
+
+    for i in range(fn.shape[0]):
+        for j in range(0,fn.shape[1]):
+            try:
+                ws.cell(row = i+2, column = j+1).value = fn.iloc[i,j]
+            except:
+                pass
+            
+    response = HttpResponse(content_type = "application/ms-excel")
+    content = "attachment; filename = %s"%name
+    response["Content-Disposition"] = content
+    wb.save(response)
+    return response
 
 def ED_Vici(AgentUser,Phone,VendorId,numip):
 
@@ -416,6 +444,38 @@ order by vendor_lead_code,substring(phone_number from 2 for 1),status desc;
         return JsonResponse(json.loads(b),safe=False)
         # return Response({'AddUser' : 'ok'},status = status.HTTP_200_OK)
 
+# consulta validacion de telefonos
+class ExcelVicidialStatusValidator(APIView):
+    def get(self, request, *args, **kwargs):
+        #credenciales MySQL206
+        connM = {
+            'host' : '10.150.1.206',
+            'user':'desarrollo',
+            'password':'soportE*8994',
+            'database' : 'asterisk'
+            }
+        #query PostgreSQL
+        query ="""
+select substring(phone_number from 2 for 11)phone_number, vendor_lead_code, status, count(*) cantidad
+from asterisk.vicidial_list
+WHERE list_id = 20200811001
+AND CAST(modify_date as date) = '{0}'
+and SUBSTRING(phone_number from 1 for 1) = '9'
+and length(phone_number) = 11
+group by vendor_lead_code,substring(phone_number from 2 for 1),status
+order by vendor_lead_code,substring(phone_number from 2 for 1),status desc;
+        """
+        # print(pd.read_sql(query,mysql.connector.Connect(**connM)))
+        # print(pd.DataFrame(list(VicidialStatusValidator.objects.using('public').all().values())))
+        b = pd.merge(pd.read_sql(query.format(self.kwargs['fecha']),mysql.connector.Connect(**connM))
+                ,pd.DataFrame(list(VicidialStatusValidator.objects.using('public').all().values()))
+                ,how = 'left'
+                ,on = 'status'
+                ,indicator=False)
+        return excel(b,self.kwargs['fecha']+'validator.xlsx')
+        # return JsonResponse(json.loads(b),safe=False)
+        # return Response({'AddUser' : 'ok'},status = status.HTTP_200_OK)
+
 # consulta indicadores de tareas
 class VicidialListIndicators(APIView):
     def get(self, request, *args, **kwargs):
@@ -433,7 +493,8 @@ t2.list_name
 ,sum(case when t1.status in ('PS','PSC') then 1 else 0 end ) presion
 ,sum(case when t1.status in ('SG') then 1 else 0 end ) seguimiento
 ,sum(case when t1.status in ('CP','CR') then 1 else 0 end ) compromiso
-,sum(case when t1.status in ('NG') then 1 else 0 end ) negociacion 
+,sum(case when t1.status in ('NG') then 1 else 0 end ) negociacion
+,sum(case when t1.status in ('MS','SMS','MST') then 1 else 0 end ) mensaje
 FROM asterisk.vicidial_list t1
 left join asterisk.vicidial_lists t2
 on t1.list_id = t2.list_id 

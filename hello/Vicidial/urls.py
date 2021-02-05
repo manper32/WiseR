@@ -14,4 +14,5 @@ urlpatterns = [
     path('AgentStatus/<str:user>/<str:numip>', views.AgentStatus.as_view(), name='AgentStatus'),
     path('get_validator/<str:fecha>', views.ConsultaVicidialStatusValidator.as_view(), name='VicidialStatusValidator'),
     path('get_ListIndicators/<str:numip>', views.VicidialListIndicators.as_view(), name='VicidialListIndicators'),
+    path('get_ExcelValidator/<str:fecha>', views.ExcelVicidialStatusValidator.as_view(), name='ExcelVicidialStatusValidator'),
 ]
