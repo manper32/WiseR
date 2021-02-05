@@ -37,12 +37,7 @@ def ED_Vici(AgentUser,Phone,VendorId,numip):
                                     connV.get('psw'),
                                     AgentUser,
                                     Phone,
-                                    VendorId)).text.split('|')
-                       # ,columns= ['status',
-                                  # 'list_id',
-                                  # 'list_name',
-                                  # 'campaign_id'])
-
+                                    VendorId))
     return b
 
 def EH_Vici(user,numip):
@@ -70,8 +65,7 @@ def EH_Vici(user,numip):
                                     connV.get('agc'),
                                     connV.get('user'),
                                     connV.get('psw'),
-                                    user)).text.split('|')
-
+                                    user))
     return b
 
 def EP_Vici(user,value,numip):
@@ -100,8 +94,7 @@ def EP_Vici(user,value,numip):
                                     connV.get('user'),
                                     connV.get('psw'),
                                     user,
-                                    value)).text.split('|')
-
+                                    value))
     return b
 
 def ES_Vici(user,status,numip):
@@ -130,8 +123,7 @@ def ES_Vici(user,status,numip):
                                     connV.get('user'),
                                     connV.get('psw'),
                                     user,
-                                    status)).text.split('|')
-
+                                    status))
     return b
 
 def PC_Vici(user,value,numip):
@@ -160,7 +152,7 @@ def PC_Vici(user,value,numip):
                                     connV.get('user'),
                                     connV.get('psw'),
                                     user,
-                                    value)).text.split('|')
+                                    value))
 
     return b
     
@@ -228,7 +220,6 @@ def AU_Vici(a_user,a_pswd,u_level,full_name,u_group,numip):
                                     u_level,
                                     full_name,
                                     u_group)).text.split('|')
-
     return b
 
 #######################################
@@ -237,42 +228,44 @@ class Dial(APIView):
     def post(self, request, *args, **kwargs):
         a = ED_Vici(self.kwargs['AgentUser'],self.kwargs['Phone'],self.kwargs['VendorId'],self.kwargs['numip'])
         print(a)
-        if a[0].find('conjunto de funciones external_dial') > -1:
-            return Response({'result' : a[0]},status = status.HTTP_200_OK)
+        # if a[0].find('conjunto de funciones external_dial') > -1:
+        if a.status_code == 200:
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_200_OK)
         else:
-            return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_400_BAD_REQUEST)
 
 class HangUp(APIView):
     def post(self, request, *args, **kwargs):
         a = EH_Vici(self.kwargs['user'],self.kwargs['numip'])
-        if a[0].find('conjunto de funciones external_hangup') > -1:
-            return Response({'result' : a[0]},status = status.HTTP_200_OK)
+        if a.status_code == 200:
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_200_OK)
         else:
-            return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_400_BAD_REQUEST)
 
 class Pause(APIView):
     def post(self, request, *args, **kwargs):
         a = EP_Vici(self.kwargs['user'],self.kwargs['value'],self.kwargs['numip'])
-        if a[0].find('conjunto de funciones external_pause') > -1:
-            return Response({'result' : a[0]},status = status.HTTP_200_OK)
+        if a.status_code == 200:
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_200_OK)
         else:
-            return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_400_BAD_REQUEST)
 
 class Status(APIView):
     def post(self, request, *args, **kwargs):
         a = ES_Vici(self.kwargs['user'],self.kwargs['status'],self.kwargs['numip'])
-        if a[0].find('conjunto de funciones external_status') > -1:
-            return Response({'result' : a[0]},status = status.HTTP_200_OK)
+        if a.status_code == 200:
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_200_OK)
         else:
-            return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_400_BAD_REQUEST)
 
 class PauseCode(APIView):
     def post(self, request, *args, **kwargs):
         a = PC_Vici(self.kwargs['user'],self.kwargs['value'],self.kwargs['numip'])
-        if a[0].find('función pause_code envió') > -1:
-            return Response({'result' : a[0]},status = status.HTTP_200_OK)
+        if a.status_code == 200:
+        # if a[0].find('XITO:') > -1:
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_200_OK)
         else:
-            return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
+            return Response({'result' : a.text.split('|')[0]},status = status.HTTP_400_BAD_REQUEST)
 
 class HangUpManual(APIView):
     def post(self, request, *args, **kwargs):
@@ -282,22 +275,22 @@ class HangUpManual(APIView):
         b = EP_Vici(self.kwargs['user'],'PAUSE',self.kwargs['numip'])
         time.sleep(2)
         d = PC_Vici(self.kwargs['user'],self.kwargs['value'],self.kwargs['numip'])
-        if a[0].find('XITO:') > -1\
-        and c[0].find('XITO:') > -1\
-        and b[0].find('XITO:') > -1\
-        and d[0].find('XITO:') > -1:
+        if a.status_code == 200\
+        and c.status_code == 200\
+        and b.status_code == 200\
+        and d.status_code == 200:
             return Response({
-                'result hangup' : a[0],
-                'result status' : c[0],
-                'result pause' : b[0],
-                'resut pause_code': d[0]
+                'result hangup' : a.text.split('|')[0],
+                'result status' : c.text.split('|')[0],
+                'result pause' : b.text.split('|')[0],
+                'resut pause_code': d.text.split('|')[0]
             },status = status.HTTP_200_OK)
         else:
             return Response({
-                'result hangup' : a[0],
-                'result status' : c[0],
-                'result pause' : b[0],
-                'resut pause_code' : d[0]
+                'result hangup' : a.text.split('|')[0],
+                'result status' : c.text.split('|')[0],
+                'result pause' : b.text.split('|')[0],
+                'resut pause_code' : d.text.split('|')[0]
             },status = status.HTTP_400_BAD_REQUEST)
 
 class ChangeIngroups(APIView):
