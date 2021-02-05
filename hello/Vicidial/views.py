@@ -236,7 +236,8 @@ def AU_Vici(a_user,a_pswd,u_level,full_name,u_group,numip):
 class Dial(APIView):
     def post(self, request, *args, **kwargs):
         a = ED_Vici(self.kwargs['AgentUser'],self.kwargs['Phone'],self.kwargs['VendorId'],self.kwargs['numip'])
-        if a[0].find('ÉXITO: conjunto de funciones external_dial') > -1:
+        print(a)
+        if a[0].find('conjunto de funciones external_dial') > -1:
             return Response({'result' : a[0]},status = status.HTTP_200_OK)
         else:
             return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
@@ -244,7 +245,7 @@ class Dial(APIView):
 class HangUp(APIView):
     def post(self, request, *args, **kwargs):
         a = EH_Vici(self.kwargs['user'],self.kwargs['numip'])
-        if a[0].find('ÉXITO: conjunto de funciones external_hangup') > -1:
+        if a[0].find('conjunto de funciones external_hangup') > -1:
             return Response({'result' : a[0]},status = status.HTTP_200_OK)
         else:
             return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
@@ -252,7 +253,7 @@ class HangUp(APIView):
 class Pause(APIView):
     def post(self, request, *args, **kwargs):
         a = EP_Vici(self.kwargs['user'],self.kwargs['value'],self.kwargs['numip'])
-        if a[0].find('ÉXITO: conjunto de funciones external_pause') > -1:
+        if a[0].find('conjunto de funciones external_pause') > -1:
             return Response({'result' : a[0]},status = status.HTTP_200_OK)
         else:
             return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
@@ -260,7 +261,7 @@ class Pause(APIView):
 class Status(APIView):
     def post(self, request, *args, **kwargs):
         a = ES_Vici(self.kwargs['user'],self.kwargs['status'],self.kwargs['numip'])
-        if a[0].find('ÉXITO: conjunto de funciones external_status') > -1:
+        if a[0].find('conjunto de funciones external_status') > -1:
             return Response({'result' : a[0]},status = status.HTTP_200_OK)
         else:
             return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
@@ -268,7 +269,7 @@ class Status(APIView):
 class PauseCode(APIView):
     def post(self, request, *args, **kwargs):
         a = PC_Vici(self.kwargs['user'],self.kwargs['value'],self.kwargs['numip'])
-        if a[0].find('ÉXITO: función pause_code envió') > -1:
+        if a[0].find('función pause_code envió') > -1:
             return Response({'result' : a[0]},status = status.HTTP_200_OK)
         else:
             return Response({'result' : a[0]},status = status.HTTP_400_BAD_REQUEST)
@@ -281,10 +282,10 @@ class HangUpManual(APIView):
         b = EP_Vici(self.kwargs['user'],'PAUSE',self.kwargs['numip'])
         time.sleep(2)
         d = PC_Vici(self.kwargs['user'],self.kwargs['value'],self.kwargs['numip'])
-        if a[0].find('ÉXITO:') > -1\
-        and c[0].find('ÉXITO:') > -1\
-        and b[0].find('ÉXITO:') > -1\
-        and d[0].find('ÉXITO:') > -1:
+        if a[0].find('XITO:') > -1\
+        and c[0].find('XITO:') > -1\
+        and b[0].find('XITO:') > -1\
+        and d[0].find('XITO:') > -1:
             return Response({
                 'result hangup' : a[0],
                 'result status' : c[0],
@@ -316,7 +317,7 @@ class ChangeIngroups(APIView):
         ingroup = pd.read_sql(query.format(self.kwargs['user']),mysql.connector.connect(**connM)).iloc[0,0]
 
         a = CI_Vici(self.kwargs['user'],ingroup,self.kwargs['numip'])
-        if a[0][0].find('ÉXITO:') > -1 and a[1][0].find('ÉXITO:') > -1:
+        if a[0][0].find('XITO:') > -1 and a[1][0].find('XITO:') > -1:
             return Response({
                 'change_ingroups' : a[0][0],
                 'logout' : a[1][0]
