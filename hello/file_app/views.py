@@ -561,6 +561,10 @@ class ConsultaGestion(APIView):
                 .values('id','indicador')))
         queryset4 = pd.DataFrame(list(UsuariosWiser.objects.using('public').all()\
                 .values('id','nombre')))
+
+        if queryset1.empty:
+            return Response({'result':'Sin gestiones anteriores'}, status=status.HTTP_200_OK)
+
         merge1 = pd.merge(queryset1
                             ,queryset3
                             ,how = "left"
@@ -592,6 +596,10 @@ class ConsultaTareaCall(generics.ListCreateAPIView):
                                                                             ,second=0
                                                                             ,microsecond=0)
                     ,tipo='CALL').values()))
+
+        if queryset.empty:
+            return Response({'result':'Sin tareas Previas'}, status=status.HTTP_200_OK)
+
                 #credenciales MySQL120
         connM = {
             'host' : '10.150.1.'+self.kwargs['numip'],
