@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from file_app.models import File, Gestiones, Tareas, VicidialPause, CampaingList
+from file_app.models import File, Gestiones, Tareas, VicidialPause, CampaingList, Habeasdata, AuxIndicativos
 
 class FileSerializer(serializers.ModelSerializer):
   class Meta():
@@ -51,3 +51,17 @@ class CampaignListSerializer(serializers.ModelSerializer):
       'campaing_name',
       'unit_id',
       'campaing_type')
+
+class HabeasDataSerializer(serializers.ModelSerializer):
+  class Meta():
+    model = Habeasdata
+    fields = (
+      'deudor_id',
+      'habeas_data',
+      'fecha_registro',
+      'telefono',)
+
+class AuxIndicativosSerializer(serializers.ModelSerializer):
+  class Meta():
+    model = AuxIndicativos
+    fields = ('departamento', 'ciudad', 'indicativo')

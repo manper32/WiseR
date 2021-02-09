@@ -177,3 +177,39 @@ class CampaingList(models.Model):
     class Meta:
         managed = False
         db_table = 'campaing_list'
+
+class Habeasdata(models.Model):
+    deudor_id = models.CharField(max_length=50,primary_key=True)
+    habeas_data = models.BooleanField()
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    telefono = models.BigIntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'habeasdata'
+        unique_together = (('deudor_id', 'telefono'),)
+
+class Telefonos(models.Model):
+    telefono = models.BigIntegerField()
+    deudor_id = models.CharField(max_length=100)
+    telefono_id = models.BigAutoField(primary_key=True)
+    telefono_tipo = models.CharField(max_length=10, blank=True, null=True)
+    telefono_estado = models.BooleanField()
+    departamento = models.CharField(max_length=150, blank=True, null=True)
+    ciudad = models.CharField(max_length=150, blank=True, null=True)
+    indicativo = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'telefonos'
+        unique_together = (('telefono', 'deudor_id'),)
+
+class AuxIndicativos(models.Model):
+    departamento = models.CharField(primary_key=True, max_length=150)
+    ciudad = models.CharField(max_length=150)
+    indicativo = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'aux_indicativos'
+        unique_together = (('departamento', 'ciudad'),)

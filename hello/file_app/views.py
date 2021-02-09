@@ -8,6 +8,8 @@ from file_app.serializers import GestionSerializer
 from file_app.serializers import TareasSerializer
 from file_app.serializers import VicidialPauseSerializer
 from file_app.serializers import CampaignListSerializer
+from file_app.serializers import AuxIndicativosSerializer
+from file_app.serializers import HabeasDataSerializer
 from file_app.models import Tipificaciones, Codigos, NombreRama
 from django.db.models import Count, Sum
 from django.views.decorators.csrf import csrf_exempt
@@ -22,6 +24,12 @@ from file_app.models import Unidad
 from file_app.models import TipificacionesHerramientas
 from file_app.models import UsuariosWiser
 from file_app.models import CampaingList
+from file_app.models import Habeasdata
+from file_app.models import Habeasdata
+from file_app.models import AuxIndicativos
+from file_app.models import Telefonos
+from django.http import HttpResponse
+from openpyxl import Workbook
 from datetime import datetime
 from django.http import JsonResponse
 import jxmlease
@@ -32,20 +40,31 @@ import mysql.connector
 import json
 import random
 
-cust = [
-    'testbogo',
-    'testmaf',
-    'testok',
-    'testclar',
-    'testcode',
-    'testcolp',
-    'testdavi',
-    'testfala',
-    'testpopu',
-    'testprog',
-    'testprop',
-    'testqnt',
-    'testsant',]
+def excel(fn,name):
+    wb = Workbook()
+    ws = wb.active
+
+    k = 0
+    a = pd.DataFrame(fn.columns)
+
+    for k in range(a.shape[0]):
+        ws.cell(row = 1, column = k+1).value = a.iloc[k,0]
+
+    i=0
+    j=0
+
+    for i in range(fn.shape[0]):
+        for j in range(0,fn.shape[1]):
+            try:
+                ws.cell(row = i+2, column = j+1).value = fn.iloc[i,j]
+            except:
+                pass
+            
+    response = HttpResponse(content_type = "application/ms-excel")
+    content = "attachment; filename = %s"%name
+    response["Content-Disposition"] = content
+    wb.save(response)
+    return response
 
 def SMS_Mas(tel='',msg='',lms='false',fls='false',pmu='true'):
 
@@ -330,7 +349,7 @@ class FileSMS(APIView):
                 return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
 
             tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).filter(
-                herramienta='sms'
+                herramienta='SMS'
             ).values('id')
             # asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                         # unidad = unidad)
@@ -421,7 +440,7 @@ class FileEmail(APIView):
                 return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
 
             tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
-                herramienta='Email'
+                herramienta='EMAIL'
             )
 
             for i in range(len(data)):
@@ -439,7 +458,7 @@ class FileEmail(APIView):
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Envio de EMAIL
+# Envio de GesCall
 class FileGesCall(APIView):
     def post(self, request, *args, **kwargs):
         file_serializer = FileSerializer(data=request.data)
@@ -462,7 +481,7 @@ class FileGesCall(APIView):
                 return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
 
             tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
-                herramienta='GesCall'
+                herramienta='GESCALL'
             )
 
             for i in range(len(data)):
@@ -536,6 +555,59 @@ class FileCreacionTarea(APIView):
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Habeas data
+class CrearHabeasData(APIView):
+    def post(self, request, *args, **kwargs):
+        habeas_data=request.data.get('habeas_data')
+        deudor_id=request.data.get('deudor_id')
+        telefono=request.data.get('telefono')
+
+        if habeas_data == None:
+            return Response({'error':'habeas_data requerido'},status=status.HTTP_400_BAD_REQUEST)
+        elif deudor_id == None:
+            return Response({'error':'deudor_id requerido'},status=status.HTTP_400_BAD_REQUEST)
+        elif telefono == None:
+            return Response({'error':'telefono requerido'},status=status.HTTP_400_BAD_REQUEST)
+
+        Habeasdata.objects.using(self.kwargs['db']).create(
+            deudor_id=deudor_id,
+            habeas_data=habeas_data,
+            telefono=telefono)
+
+        if habeas_data == True and len(str(telefono)) == 7:
+            # departamento = request.data.get('departaento')
+            ciudad = request.data.get('ciudad')
+            Telefonos.objects.using(self.kwargs['db']).create(
+                telefono = telefono,
+                deudor_id = deudor_id,
+                telefono_tipo = 'Fijo',
+                telefono_estado = True,
+                ciudad = ciudad,
+                indicativo = AuxIndicativos.objects.using('public').get(ciudad=ciudad).indicativo
+            )
+        elif habeas_data == True and len(str(telefono)) == 10:
+            Telefonos.objects.using(self.kwargs['db']).create(
+                telefono = telefono,
+                deudor_id = deudor_id,
+                telefono_tipo = 'Movil',
+                telefono_estado = True,
+            )
+        else:
+            return Response({'error':'numero tiene que ser de 7 o 10 digitos'},status=status.HTTP_400_BAD_REQUEST)
+        return Response({'result':'Telefono agregado'},status=status.HTTP_201_CREATED)
+
+# Habeas data
+class ConsultaHabeasData(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = Habeasdata.objects.using(self.kwargs['db'])\
+            .filter(fecha_registro__range= [self.kwargs['li'],self.kwargs['ls']]).values()
+        b = pd.DataFrame(list(queryset))
+        b['habeas_data'] = b.habeas_data.replace({
+            0:'Rechazado',
+            1:'Aceptado'
+            })
+        return excel(b,'HabeasData'+self.kwargs['db']+'.xlsx')
 
 # consulta gestiones historicas
 class ConsultaGestion(APIView):
@@ -715,6 +787,13 @@ class ConsultaTareasSum(APIView):
         # print(queryset)
 
         return Response(queryset, status=status.HTTP_201_CREATED)
+
+# consulta vicidial campaigns
+class ConsultaAuxIndicativos(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = AuxIndicativos.objects.using('public').all()
+        return queryset
+    serializer_class = AuxIndicativosSerializer
 
 class WolkvoxRepChat(APIView):
     def get(self, request, *args, **kwargs):

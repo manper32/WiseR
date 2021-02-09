@@ -20,4 +20,7 @@ urlpatterns = [
     path('get_WolkRepChat/<int:num>', views.WolkvoxRepChat.as_view(), name='WolkvoxRepChat'),
     path('get_RETURN/<str:db>', views.ConsultaTareasReturn.as_view(), name='ConsultaReturn'),
     path('get_shipment/<str:db>/<str:tipo>', views.ConsultaTareasSum.as_view(), name='ConsultaReturn'),
+    path('HabeasData/<str:db>', views.CrearHabeasData.as_view(), name='HabeasData'),
+    path('ExcelHabeasData/<str:db>/<str:li>/<str:ls>', views.ConsultaHabeasData.as_view(), name='ExcelHabeasData'),
+    path('AuxIndicativos/', views.ConsultaAuxIndicativos.as_view(), name='AuxIndicativos'),
 ]
