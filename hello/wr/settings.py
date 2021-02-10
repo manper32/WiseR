@@ -60,8 +60,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 CORS_ORIGIN_WHITELIST = (
     'http://10.150.1.79:8001',
+    'http://10.150.1.77:8001',
+    'http://10.150.1.74:8001',
 )
 
 ROOT_URLCONF = 'wr.urls'
@@ -229,6 +233,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_cartera_propia'
+        },
+        'NAME': 'postgres',
+        'USER' : 'postgres',
+        'PASSWORD' : 'cobrando.bi.2020',
+        'HOST' : '10.150.1.74',
+        'PORT' : '5432'
+    },
+    'CARTERA PROPIA': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'OPTIONS': {
+            'options': '-c search_path=cbpo_propia_wiser'
         },
         'NAME': 'postgres',
         'USER' : 'postgres',
