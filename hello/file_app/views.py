@@ -335,12 +335,6 @@ class FileSMS(APIView):
             data = get_data(file_obj)
             col = list(data.keys())
             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
-
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'SMS')
             
             try:
                 asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
@@ -353,6 +347,12 @@ class FileSMS(APIView):
             ).values('id')
             # asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                         # unidad = unidad)
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'SMS')
             
             for i in range(len(data)):
                 Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
@@ -428,11 +428,6 @@ class FileEmail(APIView):
             col = list(data.keys())
             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'EMAIL')
             try:
                 asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                                     unidad = self.kwargs['unidad'])
@@ -442,6 +437,12 @@ class FileEmail(APIView):
             tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
                 herramienta='EMAIL'
             )
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'EMAIL')
 
             for i in range(len(data)):
                 Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
@@ -453,6 +454,7 @@ class FileEmail(APIView):
                 ,descripcion = data['mensaje'][i]
                 ,nom_contacto_tercero = data['correo'][i])
             # print(data)
+            
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -468,12 +470,7 @@ class FileGesCall(APIView):
             data = get_data(file_obj)
             col = list(data.keys())
             data = pd.DataFrame(data[col[0]][1:],columns=data[col[0]][0])
-
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'GESCALL')
+            
             try:
                 asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                                     unidad = self.kwargs['unidad'])
@@ -483,6 +480,12 @@ class FileGesCall(APIView):
             tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
                 herramienta='GESCALL'
             )
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
+                                                            registros = len(data),
+                                                            clientes = len(data.cedula.drop_duplicates()),
+                                                            obligaciones = 0,
+                                                            tipo = 'GESCALL')            
 
             for i in range(len(data)):
                 Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
