@@ -312,6 +312,9 @@ DATABASE_ROUTERS = [
     'file_app.routers.file_appRouter11',
     'file_app.routers.file_appRouter12',
     'file_app.routers.file_appRouter13',
+    'file_app.routers.file_appRouter14',
+    'file_app.routers.file_appRouter15',
+    'file_app.routers.file_appRouter16',
     # Vicidial
     'Vicidial.routers.VicidialRouter',
 ]

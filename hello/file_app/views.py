@@ -353,6 +353,7 @@ class FileSMS(APIView):
                                                             clientes = len(data.cedula.drop_duplicates()),
                                                             obligaciones = 0,
                                                             tipo = 'SMS')
+            print(tarea)
             
             for i in range(len(data)):
                 Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
