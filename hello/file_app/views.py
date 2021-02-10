@@ -342,9 +342,9 @@ class FileSMS(APIView):
             except:
                 return Response({'error':'No coincide la unidad'}, status=status.HTTP_400_BAD_REQUEST)
 
-            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).filter(
+            tipificacion = TipificacionesHerramientas.objects.using(request.data.get('remark')).get(
                 herramienta='SMS'
-            ).values('id')
+            )
             # asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                         # unidad = unidad)
 
@@ -353,22 +353,20 @@ class FileSMS(APIView):
                                                             clientes = len(data.cedula.drop_duplicates()),
                                                             obligaciones = 0,
                                                             tipo = 'SMS')
-            print(tarea)
+            # print(tarea)
             
             for i in range(len(data)):
+                SMS_Mas(str(data['telefono'][i]),
+                            data['mensaje'][i])
                 Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
                 ,usuario_id = 'SMS_BACK'
                 ,deudor_id = data['cedula'][i]
                 ,asignacion_id = asignacion.asignacion_id
                 ,telefono = data['telefono'][i]
                 ,canal = 'SMS'
-                ,id_tipificacion = tipificacion
+                ,id_tipificacion = tipificacion.id
                 ,descripcion = data['mensaje'][i])
             # print(data)
-            
-            for i in range(len(data)):
-                SMS_Mas(str(data['telefono'][i]),
-                            data['mensaje'][i])
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
