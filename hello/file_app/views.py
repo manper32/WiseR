@@ -791,6 +791,7 @@ class ConsultaTareasReturn(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Tareas.objects.using(self.kwargs['db']).filter(
             tipo='RETURN',
+            unidad_id=self.kwargs['unidad'],
             tarea_fecha_creacion__gte=datetime.now().replace(day=1
                                                             ,hour=0
                                                             ,minute=0
@@ -798,6 +799,21 @@ class ConsultaTareasReturn(generics.ListCreateAPIView):
                                                             ,microsecond=0))
         return queryset
     serializer_class = TareasSerializer
+
+# consulta tareas Return
+class ExcelTareasReturn(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = Tareas.objects.using(self.kwargs['db']).filter(
+            tipo='RETURN',
+            unidad_id=self.kwargs['unidad'],
+            tarea_fecha_creacion__gte=datetime.now().replace(day=1
+                                                            ,hour=0
+                                                            ,minute=0
+                                                            ,second=0
+                                                            ,microsecond=0)).values()
+        b = pd.DataFrame(list(queryset))
+        
+        return excel(b,'Return'+self.kwargs['db']+'.xlsx')
 
 # consulta suma de herramienta
 class ConsultaTareasSum(APIView):
