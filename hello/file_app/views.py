@@ -688,7 +688,8 @@ t2.list_name
 ,sum(case when t1.status in ('PS','PSC') then 1 else 0 end ) presion
 ,sum(case when t1.status in ('SG') then 1 else 0 end ) seguimiento
 ,sum(case when t1.status in ('CP','CR') then 1 else 0 end ) compromiso
-,sum(case when t1.status in ('NG') then 1 else 0 end ) negociacion 
+,sum(case when t1.status in ('NG') then 1 else 0 end ) negociacion
+,sum(case when t1.status in ('MS','SMS','MST') then 1 else 0 end ) mensaje
 FROM asterisk.vicidial_list t1
 left join asterisk.vicidial_lists t2
 on t1.list_id = t2.list_id 
