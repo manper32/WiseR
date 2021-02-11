@@ -6,7 +6,7 @@ class File(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 class Gestiones(models.Model):
-    gestion_id = models.BigAutoField(primary_key=True)
+    gestion_id = models.BigIntegerField(primary_key=True)
     tarea_id = models.BigIntegerField()
     gestion_fecha = models.DateTimeField(auto_now_add=True)
     usuario_id = models.CharField(max_length=50)
@@ -67,7 +67,7 @@ class NombreRama(models.Model):
         unique_together = (('id', 'unidad'),)
 
 class Tareas(models.Model):
-    tarea_id = models.BigAutoField(primary_key=True)
+    tarea_id = models.BigIntegerField(primary_key=True)
     tarea_fecha_creacion = models.DateTimeField(auto_now_add=True)
     unidad_id = models.BigIntegerField()
     registros = models.BigIntegerField()

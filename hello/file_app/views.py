@@ -11,7 +11,7 @@ from file_app.serializers import CampaignListSerializer
 from file_app.serializers import AuxIndicativosSerializer
 from file_app.serializers import HabeasDataSerializer
 from file_app.models import Tipificaciones, Codigos, NombreRama
-from django.db.models import Count, Sum
+from django.db.models import Avg, Max, Min, Sum, Count, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from pyexcel_xlsx import get_data
@@ -348,17 +348,22 @@ class FileSMS(APIView):
             # asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                         # unidad = unidad)
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'SMS')
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                unidad_id = unidad,
+                registros = len(data),
+                clientes = len(data.cedula.drop_duplicates()),
+                obligaciones = 0,
+                tipo = 'SMS')
             # print(tarea)
             
             for i in range(len(data)):
-                SMS_Mas(str(data['telefono'][i]),
-                            data['mensaje'][i])
-                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
+                
+                Gestiones.objects.using(request.data.get('remark')).create(
+                gestion_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
+                ,tarea_id = tarea.tarea_id
                 ,usuario_id = 'SMS_BACK'
                 ,deudor_id = data['cedula'][i]
                 ,asignacion_id = asignacion.asignacion_id
@@ -366,7 +371,9 @@ class FileSMS(APIView):
                 ,canal = 'SMS'
                 ,id_tipificacion = tipificacion.id
                 ,descripcion = data['mensaje'][i])
-            # print(data)
+
+                SMS_Mas(str(data['telefono'][i]),
+                            data['mensaje'][i])            
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -407,12 +414,15 @@ class RetornoLlamadas(APIView):
                 # print(args)
                 Plist.append(requests.get(url,params=args).status_code)
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'RETURN',
-                                                            list_id = '20200811001')
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                unidad_id = self.kwargs['unidad'],
+                registros = len(data),
+                clientes = len(data.cedula.drop_duplicates()),
+                obligaciones = 0,
+                tipo = 'RETURN',
+                list_id = '20200811001')
             
             return Response(file_serializer.data, status=status.HTTP_200_OK)
 
@@ -437,14 +447,20 @@ class FileEmail(APIView):
                 herramienta='EMAIL'
             )
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'EMAIL')
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                unidad_id = self.kwargs['unidad'],
+                registros = len(data),
+                clientes = len(data.cedula.drop_duplicates()),
+                obligaciones = 0,
+                tipo = 'EMAIL')
 
             for i in range(len(data)):
-                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
+                Gestiones.objects.using(request.data.get('remark')).create(
+                gestion_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
+                ,tarea_id = tarea.tarea_id
                 ,usuario_id = 'EMAIL_BACK'
                 ,deudor_id = data['cedula'][i]
                 ,asignacion_id = asignacion.asignacion_id
@@ -480,14 +496,20 @@ class FileGesCall(APIView):
                 herramienta='GESCALL'
             )
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = self.kwargs['unidad'],
-                                                            registros = len(data),
-                                                            clientes = len(data.cedula.drop_duplicates()),
-                                                            obligaciones = 0,
-                                                            tipo = 'GESCALL')            
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                unidad_id = self.kwargs['unidad'],
+                registros = len(data),
+                clientes = len(data.cedula.drop_duplicates()),
+                obligaciones = 0,
+                tipo = 'GESCALL')            
 
             for i in range(len(data)):
-                Gestiones.objects.using(request.data.get('remark')).create(tarea_id = tarea.tarea_id
+                Gestiones.objects.using(request.data.get('remark')).create(
+                gestion_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
+                ,tarea_id = tarea.tarea_id
                 ,usuario_id = 'GESCALL'
                 ,deudor_id = data['cedula'][i]
                 ,asignacion_id = asignacion.asignacion_id
@@ -546,13 +568,16 @@ class FileCreacionTarea(APIView):
             else:
                 return Response({'error' : 'callf es binario'},status = status.HTTP_400_BAD_REQUEST)
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(unidad_id = unidad,
-                                                registros = len(data),
-                                                clientes = len(data.cedula.drop_duplicates()),
-                                                obligaciones = 0,
-                                                tipo = tipo,
-                                                nombre = name,
-                                                list_id = now.strftime("%Y%m%d%H%M%S"))
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                unidad_id = unidad,
+                registros = len(data),
+                clientes = len(data.cedula.drop_duplicates()),
+                obligaciones = 0,
+                tipo = tipo,
+                nombre = name,
+                list_id = now.strftime("%Y%m%d%H%M%S"))
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -686,7 +711,7 @@ t2.list_name
 ,t1.list_id
 ,sum(case when t1.status in ('MS','SMS','NE''NC','BZ','MST','CO','PSC','FLL','FL','ME','FAS','TRA','PU','NC') then 1 else 0 end ) no_contacto
 ,sum(case when t1.status in ('PS','PSC') then 1 else 0 end ) presion
-,sum(case when t1.status in ('SG') then 1 else 0 end ) seguimiento
+,sum(case when t1.status in ('SG','YP') then 1 else 0 end ) seguimiento
 ,sum(case when t1.status in ('CP','CR') then 1 else 0 end ) compromiso
 ,sum(case when t1.status in ('NG') then 1 else 0 end ) negociacion
 ,sum(case when t1.status in ('MS','SMS','MST') then 1 else 0 end ) mensaje
