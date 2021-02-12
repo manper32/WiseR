@@ -349,7 +349,7 @@ class FileSMS(APIView):
                                                                         # unidad = unidad)
 
             tarea = Tareas.objects.using(request.data.get('remark')).create(
-                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                tarea_id = Tareas.objects.using(request.data.get('remark'))\
                     .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
                 unidad_id = unidad,
                 registros = len(data),
@@ -415,7 +415,7 @@ class RetornoLlamadas(APIView):
                 Plist.append(requests.get(url,params=args).status_code)
 
             tarea = Tareas.objects.using(request.data.get('remark')).create(
-                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                tarea_id = Tareas.objects.using(request.data.get('remark'))\
                     .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
                 unidad_id = self.kwargs['unidad'],
                 registros = len(data),
@@ -448,7 +448,7 @@ class FileEmail(APIView):
             )
 
             tarea = Tareas.objects.using(request.data.get('remark')).create(
-                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                tarea_id = Tareas.objects.using(request.data.get('remark'))\
                     .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
                 unidad_id = self.kwargs['unidad'],
                 registros = len(data),
@@ -497,7 +497,7 @@ class FileGesCall(APIView):
             )
 
             tarea = Tareas.objects.using(request.data.get('remark')).create(
-                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                tarea_id = Tareas.objects.using(request.data.get('remark'))\
                     .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
                 unidad_id = self.kwargs['unidad'],
                 registros = len(data),
@@ -546,9 +546,8 @@ class FileCreacionTarea(APIView):
                         name,#list_name,
                         '24hours',#local_call_time,
                         str(numip))
-            
-            # print(list_id.iloc[0,0]+1,campaign,name,str(numip))
-            # print(a)
+            # print(Gestiones.objects.using(request.data.get('remark'))\
+                    # .all().aggregate(Max('tarea_id')).get('tarea_id__max')+2)
 
             if not a.iloc[0,0].find('SUCCESS: add_list LIST HAS BEEN ADDED') > -1:
                 return Response({'result' : a.iloc[0,0]},status = status.HTTP_400_BAD_REQUEST)
@@ -569,7 +568,7 @@ class FileCreacionTarea(APIView):
                 return Response({'error' : 'callf es binario'},status = status.HTTP_400_BAD_REQUEST)
 
             tarea = Tareas.objects.using(request.data.get('remark')).create(
-                tarea_id = Gestiones.objects.using(request.data.get('remark'))\
+                tarea_id = Tareas.objects.using(request.data.get('remark'))\
                     .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
                 unidad_id = unidad,
                 registros = len(data),
@@ -630,6 +629,8 @@ class ConsultaHabeasData(APIView):
         queryset = Habeasdata.objects.using(self.kwargs['db'])\
             .filter(fecha_registro__range= [self.kwargs['li'],self.kwargs['ls']]).values()
         b = pd.DataFrame(list(queryset))
+        if b.empty:
+            return Response({'result':'Intervalo sin registros'},status=status.HTTP_200_OK)
         b['habeas_data'] = b.habeas_data.replace({
             0:'Rechazado',
             1:'Aceptado'
