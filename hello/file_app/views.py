@@ -349,9 +349,15 @@ class FileSMS(APIView):
             # asignacion = Asignaciones.objects.using(request.data.get('remark')).get(estado = True,
                                                                         # unidad = unidad)
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(
+            if Tareas.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max') == None:
+                    tarea_id = 1
+            else:
                 tarea_id = Tareas.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = tarea_id,
                 unidad_id = unidad,
                 registros = len(data),
                 clientes = len(data.cedula.drop_duplicates()),
@@ -360,10 +366,15 @@ class FileSMS(APIView):
             # print(tarea)
             
             for i in range(len(data)):
-                
+                if Gestiones.objects.using(request.data.get('remark'))\
+                        .all().aggregate(Max('gestion_id')).get('gestion_id__max') == None:
+                    gestion_id = 1
+                else:
+                    gestion_id = Gestiones.objects.using(request.data.get('remark'))\
+                        .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
+
                 Gestiones.objects.using(request.data.get('remark')).create(
-                gestion_id = Gestiones.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
+                gestion_id = gestion_id
                 ,tarea_id = tarea.tarea_id
                 ,usuario_id = 'SMS_BACK'
                 ,deudor_id = data['cedula'][i]
@@ -415,9 +426,15 @@ class RetornoLlamadas(APIView):
                 # print(args)
                 Plist.append(requests.get(url,params=args).status_code)
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(
+            if Tareas.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max') == None:
+                    tarea_id = 1
+            else:
                 tarea_id = Tareas.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = tarea_id,
                 unidad_id = self.kwargs['unidad'],
                 registros = len(data),
                 clientes = len(data.cedula.drop_duplicates()),
@@ -448,9 +465,15 @@ class FileEmail(APIView):
                 herramienta='EMAIL'
             )
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(
+            if Tareas.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max') == None:
+                    tarea_id = 1
+            else:
                 tarea_id = Tareas.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = tarea_id,
                 unidad_id = self.kwargs['unidad'],
                 registros = len(data),
                 clientes = len(data.cedula.drop_duplicates()),
@@ -458,9 +481,14 @@ class FileEmail(APIView):
                 tipo = 'EMAIL')
 
             for i in range(len(data)):
+                if Gestiones.objects.using(request.data.get('remark'))\
+                        .all().aggregate(Max('gestion_id')).get('gestion_id__max') == None:
+                    gestion_id = 1
+                else:
+                    gestion_id = Gestiones.objects.using(request.data.get('remark'))\
+                        .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
                 Gestiones.objects.using(request.data.get('remark')).create(
-                gestion_id = Gestiones.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
+                gestion_id = gestion_id
                 ,tarea_id = tarea.tarea_id
                 ,usuario_id = 'EMAIL_BACK'
                 ,deudor_id = data['cedula'][i]
@@ -497,9 +525,19 @@ class FileGesCall(APIView):
                 herramienta='GESCALL'
             )
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(
+            print(Tareas.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max'))
+
+            if Tareas.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max') == None:
+                    tarea_id = 1
+            else:
                 tarea_id = Tareas.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1
+
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = tarea_id,
                 unidad_id = self.kwargs['unidad'],
                 registros = len(data),
                 clientes = len(data.cedula.drop_duplicates()),
@@ -507,9 +545,14 @@ class FileGesCall(APIView):
                 tipo = 'GESCALL')            
 
             for i in range(len(data)):
+                if Gestiones.objects.using(request.data.get('remark'))\
+                        .all().aggregate(Max('gestion_id')).get('gestion_id__max') == None:
+                    gestion_id = 1
+                else:
+                    gestion_id = Gestiones.objects.using(request.data.get('remark'))\
+                        .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
                 Gestiones.objects.using(request.data.get('remark')).create(
-                gestion_id = Gestiones.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('gestion_id')).get('gestion_id__max')+1
+                gestion_id = gestion_id
                 ,tarea_id = tarea.tarea_id
                 ,usuario_id = 'GESCALL'
                 ,deudor_id = data['cedula'][i]
@@ -568,9 +611,15 @@ class FileCreacionTarea(APIView):
             else:
                 return Response({'error' : 'callf es binario'},status = status.HTTP_400_BAD_REQUEST)
 
-            tarea = Tareas.objects.using(request.data.get('remark')).create(
+            if Tareas.objects.using(request.data.get('remark'))\
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max') == None:
+                    tarea_id = 1
+            else:
                 tarea_id = Tareas.objects.using(request.data.get('remark'))\
-                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1,
+                    .all().aggregate(Max('tarea_id')).get('tarea_id__max')+1
+
+            tarea = Tareas.objects.using(request.data.get('remark')).create(
+                tarea_id = tarea_id,
                 unidad_id = unidad,
                 registros = len(data),
                 clientes = len(data.cedula.drop_duplicates()),

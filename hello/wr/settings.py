@@ -240,7 +240,7 @@ DATABASES = {
         'HOST' : '10.150.1.74',
         'PORT' : '5432'
     },
-    'CARTERA PROPIA': {
+    'Cartera propia': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_propia_wiser'
