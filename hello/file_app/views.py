@@ -28,6 +28,7 @@ from file_app.models import Habeasdata
 from file_app.models import Habeasdata
 from file_app.models import AuxIndicativos
 from file_app.models import Telefonos
+from Vicidial.models import VicidialStatusValidator
 from django.http import HttpResponse
 from openpyxl import Workbook
 from datetime import datetime
@@ -801,20 +802,54 @@ class ConsultaTareasReturn(generics.ListCreateAPIView):
         return queryset
     serializer_class = TareasSerializer
 
-# consulta tareas Return
-class ExcelTareasReturn(APIView):
+# consulta retorno vicidial
+class ExcelVicidialStatusReturn(APIView):
     def get(self, request, *args, **kwargs):
-        queryset = Tareas.objects.using(self.kwargs['db']).filter(
-            tipo='RETURN',
-            unidad_id=self.kwargs['unidad'],
-            tarea_fecha_creacion__gte=datetime.now().replace(day=1
-                                                            ,hour=0
-                                                            ,minute=0
-                                                            ,second=0
-                                                            ,microsecond=0)).values()
-        b = pd.DataFrame(list(queryset))
+        #credenciales MySQL206
+        connM = {
+            'host' : '10.150.1.206',
+            'user':'desarrollo',
+            'password':'soportE*8994',
+            'database' : 'asterisk'
+            }
+        prefijo = str(Unidad.objects.using('public').get(id=self.kwargs['unidad']).prefijo)
+        # print(prefijo)
+        #query PostgreSQL
+        query ="""
+select substring(phone_number from 3 for 11)phone_number, vendor_lead_code, status, count(*) cantidad
+from asterisk.vicidial_list
+WHERE list_id = 20200811001
+AND CAST(modify_date as date) = '{0}'
+and SUBSTRING(phone_number from 1 for 2) = '{1}'
+and length(phone_number) = 12
+group by vendor_lead_code,substring(phone_number from 2 for 1),status
+order by vendor_lead_code,substring(phone_number from 2 for 1),status desc;
+        """
+        # print(pd.read_sql(query,mysql.connector.Connect(**connM)))
+        # print(pd.DataFrame(list(VicidialStatusValidator.objects.using('public').all().values())))
+        b = pd.merge(pd.read_sql(query.format(self.kwargs['fecha'],
+                                              prefijo),mysql.connector.Connect(**connM))
+                ,pd.DataFrame(list(VicidialStatusValidator.objects.using('public').all().values()))
+                ,how = 'left'
+                ,on = 'status'
+                ,indicator=False)
+        return excel(b,self.kwargs['fecha']+'return.xlsx')
+        # return Response({'AddUser' : 'ok'},status = status.HTTP_200_OK)
+
+# # consulta tareas Return
+# class ExcelTareasReturn(APIView):
+#     def get(self, request, *args, **kwargs):
+#         queryset = Tareas.objects.using(self.kwargs['db']).filter(
+#             tipo='RETURN',
+#             unidad_id=self.kwargs['unidad'],
+#             tarea_fecha_creacion__gte=datetime.now().replace(day=1
+#                                                             ,hour=0
+#                                                             ,minute=0
+#                                                             ,second=0
+#                                                             ,microsecond=0)).values()
+#         b = pd.DataFrame(list(queryset))
         
-        return excel(b,'Return'+self.kwargs['db']+'.xlsx')
+#         return excel(b,'Return'+self.kwargs['db']+'.xlsx')
 
 # consulta suma de herramienta
 class ConsultaTareasSum(APIView):
