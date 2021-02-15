@@ -32,6 +32,7 @@ from Vicidial.models import VicidialStatusValidator
 from django.http import HttpResponse
 from openpyxl import Workbook
 from datetime import datetime
+from datetime import timedelta
 from django.http import JsonResponse
 import jxmlease
 import psycopg2
@@ -645,12 +646,14 @@ class CrearHabeasData(APIView):
             return Response({'error':'deudor_id requerido'},status=status.HTTP_400_BAD_REQUEST)
         elif telefono == None:
             return Response({'error':'telefono requerido'},status=status.HTTP_400_BAD_REQUEST)
+        elif len(str(telefono)) not in [7,10]:
+            return Response({'error':'numero tiene que ser de 7 o 10 digitos'},status=status.HTTP_400_BAD_REQUEST)
 
         Habeasdata.objects.using(self.kwargs['db']).create(
             deudor_id=deudor_id,
             habeas_data=habeas_data,
             telefono=telefono)
-
+        print(len(str(telefono)) not in [7,10])
         if habeas_data == True and len(str(telefono)) == 7:
             # departamento = request.data.get('departaento')
             ciudad = request.data.get('ciudad')
@@ -669,15 +672,15 @@ class CrearHabeasData(APIView):
                 telefono_tipo = 'Movil',
                 telefono_estado = True,
             )
-        else:
-            return Response({'error':'numero tiene que ser de 7 o 10 digitos'},status=status.HTTP_400_BAD_REQUEST)
         return Response({'result':'Telefono agregado'},status=status.HTTP_201_CREATED)
 
 # Habeas data
 class ConsultaHabeasData(APIView):
     def get(self, request, *args, **kwargs):
+        ls = datetime.strptime(self.kwargs['ls'],'%Y-%m-%d') + timedelta(days=1)
+
         queryset = Habeasdata.objects.using(self.kwargs['db'])\
-            .filter(fecha_registro__range= [self.kwargs['li'],self.kwargs['ls']]).values()
+            .filter(fecha_registro__range= [self.kwargs['li'],ls]).values()
         b = pd.DataFrame(list(queryset))
         if b.empty:
             return Response({'result':'Intervalo sin registros'},status=status.HTTP_200_OK)
