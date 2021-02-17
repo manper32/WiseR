@@ -46,7 +46,7 @@ Gracias por su colaboración
                 ),
             'carterarecuperacion@cobrando.com.co',
             [
-                'Administraciondecartera@cobrando.com.co',
+                'Administracioncartera@cobrando.com.co',
                 'larodriguez@cobrando.com.co'
                 # 'mgonzalez@cobrando.com.co',
                 # 'desarrollo@cobrando.com.co',
