@@ -29,6 +29,7 @@ ALLOWED_HOSTS = [
     'testserver',
     'localhost',
     '10.150.1.77',
+    '10.150.1.74',
     'cbpodev.com'
 ]
 
@@ -92,6 +93,18 @@ WSGI_APPLICATION = 'wr.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+name = 'postgres'
+user = 'postgres'
+psw = 'cobrando.bi.2020'
+host = '10.150.1.74'
+port = '5432'
+# ######### #
+# name = 'login'
+# user = 'bi'
+# psw = 'juanitoMeToco2020'
+# host = '10.150.1.77'
+# port = '5432'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -102,198 +115,165 @@ DATABASES = {
         'OPTIONS': {
             'options': '-c search_path=public'
         },
-        'NAME': 'postgres',
-        'USER' : 'postgres',
-        'PASSWORD' : 'cobrando.bi.2020',
-        'HOST' : '10.150.1.74',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
-    # 'public': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'OPTIONS': {
-    #         'options': '-c search_path=public'
-    #     },
-    #     'NAME': 'login',
-    #     'USER' : 'bi',
-    #     'PASSWORD' : 'juanitoMeToco2020',
-    #     'HOST' : '10.150.1.77',
-    #     'PORT' : '5432'
-    # },
     'Bogota': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_bogota'
+            'options': '-c search_path=cbpo_bogota_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Maf': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_maf'
+            'options': '-c search_path=cbpo_maf_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Cartera ok': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_carteraok'
+            'options': '-c search_path=cbpo_carteraok_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Claro': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_claro'
+            'options': '-c search_path=cbpo_claro_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Codensa': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_codensa'
+            'options': '-c search_path=cbpo_codensa_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Colpatria': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_colpatria'
+            'options': '-c search_path=cbpo_colpatria_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Davivienda': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_davivienda'
+            'options': '-c search_path=cbpo_davivienda_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Falabella': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_falabella'
+            'options': '-c search_path=cbpo_falabella_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Banco popular': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_popular'
+            'options': '-c search_path=cbpo_popular_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Progresa': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_progresa'
+            'options': '-c search_path=cbpo_progresa_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
-    },
-    'Cartera propia': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'OPTIONS': {
-            'options': '-c search_path=cbpo_cartera_propia'
-        },
-        'NAME': 'postgres',
-        'USER' : 'postgres',
-        'PASSWORD' : 'cobrando.bi.2020',
-        'HOST' : '10.150.1.74',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Cartera propia': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
             'options': '-c search_path=cbpo_propia_wiser'
         },
-        'NAME': 'postgres',
-        'USER' : 'postgres',
-        'PASSWORD' : 'cobrando.bi.2020',
-        'HOST' : '10.150.1.74',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
-    # 'Cartera propia': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'OPTIONS': {
-    #         'options': '-c search_path=cbpo_propia'
-    #     },
-    #     'NAME': 'login',
-    #     'USER' : 'bi',
-    #     'PASSWORD' : 'juanitoMeToco2020',
-    #     'HOST' : '10.150.1.77',
-    #     'PORT' : '5432'
-    # },
     'Qnt': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_qnt'
+            'options': '-c search_path=cbpo_qnt_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'Santander': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_santander'
+            'options': '-c search_path=cbpo_santander_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
     'AVANTEL': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'OPTIONS': {
-            'options': '-c search_path=cbpo_avantel'
+            'options': '-c search_path=cbpo_avantel_wiser'
         },
-        'NAME': 'login',
-        'USER' : 'bi',
-        'PASSWORD' : 'juanitoMeToco2020',
-        'HOST' : '10.150.1.77',
-        'PORT' : '5432'
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
     },
 }
 
