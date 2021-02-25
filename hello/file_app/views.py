@@ -86,15 +86,15 @@ def SMS_Mas(tel='',msg='',lms='false',fls='false',pmu='true'):
                 'premium' : pmu}
         
         b = requests.get(connM.get('url').replace('\n','')
-                        ,params=args).text
+                        ,params=args).status_code
         
-        b = [jxmlease.parse(b)['response']['action'].get_cdata(),
-        jxmlease.parse(b)['response']['data']['acceptreport']['statuscode'].get_cdata(),
-        jxmlease.parse(b)['response']['data']['acceptreport']['statusmessage'].get_cdata(),
-        jxmlease.parse(b)['response']['data']['acceptreport']['messageid'].get_cdata(),
-        jxmlease.parse(b)['response']['data']['acceptreport']['recipient'].get_cdata(),
-        jxmlease.parse(b)['response']['data']['acceptreport']['messagetype'].get_cdata(),
-        jxmlease.parse(b)['response']['data']['acceptreport']['messagedata'].get_cdata()]
+        # b = [jxmlease.parse(b)['response']['action'].get_cdata(),
+        # jxmlease.parse(b)['response']['data']['acceptreport']['statuscode'].get_cdata(),
+        # jxmlease.parse(b)['response']['data']['acceptreport']['statusmessage'].get_cdata(),
+        # jxmlease.parse(b)['response']['data']['acceptreport']['messageid'].get_cdata(),
+        # jxmlease.parse(b)['response']['data']['acceptreport']['recipient'].get_cdata(),
+        # jxmlease.parse(b)['response']['data']['acceptreport']['messagetype'].get_cdata(),
+        # jxmlease.parse(b)['response']['data']['acceptreport']['messagedata'].get_cdata()]
 
         return b
 
@@ -216,11 +216,12 @@ class FileTipi(APIView):
 
             #credenciales PostgreSQL produccion
             connP_P = {
-                'host' : '10.150.1.77',
+                'host' : '10.150.1.74',
                 'port' : '5432',
-                'user':'bi',
-                'password':'juanitoMeToco2020',
-                'database' : 'login'}
+                'user':'postgres',
+                'password':'cobrando.bi.2020',
+                'database' : 'postgres'
+                }
 
             query = """select id,indicador
                     from public.indicadores_general
@@ -385,8 +386,12 @@ class FileSMS(APIView):
                 ,id_tipificacion = tipificacion.id
                 ,descripcion = data['mensaje'][i])
 
-                SMS_Mas(str(data['telefono'][i]),
-                            data['mensaje'][i])            
+                if len(data['mensaje'][i]) > 160:
+                    SMS_Mas(str(data['telefono'][i]),
+                                data['mensaje'][i],lms='true')
+                else:
+                    SMS_Mas(str(data['telefono'][i]),
+                                data['mensaje'][i])
 
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
