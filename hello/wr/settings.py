@@ -275,6 +275,17 @@ DATABASES = {
         'HOST' : host,
         'PORT' : port
     },
+    'Mi Banco': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'OPTIONS': {
+            'options': '-c search_path=cbpo_mibanco_wiser'
+        },
+        'NAME': name,
+        'USER' : user,
+        'PASSWORD' : psw,
+        'HOST' : host,
+        'PORT' : port
+    },
 }
 
 DATABASE_ROUTERS = [
