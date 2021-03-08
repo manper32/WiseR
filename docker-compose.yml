@@ -43,8 +43,8 @@ services:
       - media:/opt/services/djangoapp/media
     ports:
       - 8000:8000
-    #networks:
-    #  - database1_network
+    networks:
+     - manuel_network
       # - database2_network
       #  - nginx_network
     # depends_on:
@@ -66,12 +66,14 @@ services:
       - media:/opt/services/djangoapp/media
     links:
       - djangoapp
+    networks:
+      - manuel_network
     depends_on:
       - djangoapp
 
-#networks:
-#database1_network:
-#    driver: bridge
+networks:
+  manuel_network:
+    driver: bridge
   # database2_network:
   #   driver: bridge
   #  nginx_network:
