@@ -219,7 +219,7 @@ class FileTipi(APIView):
 
             #credenciales PostgreSQL produccion
             connP_P = {
-                'host' : '10.150.1.77',
+                'host' : '10.150.1.74',
                 'port' : '5432',
                 'user':'postgres',
                 'password':'cobrando.bi.2020',
