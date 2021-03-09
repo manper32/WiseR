@@ -34,6 +34,7 @@ from openpyxl import Workbook
 from datetime import datetime
 from datetime import timedelta
 from django.http import JsonResponse
+from wr.settings import host,user,psw,port,name
 import jxmlease
 import psycopg2
 import requests
@@ -219,11 +220,11 @@ class FileTipi(APIView):
 
             #credenciales PostgreSQL produccion
             connP_P = {
-                'host' : '10.150.1.74',
-                'port' : '5432',
-                'user':'postgres',
-                'password':'cobrando.bi.2020',
-                'database' : 'postgres'
+                'host' : host,
+                'port' : port,
+                'user':user,
+                'password':psw,
+                'database' : name
                 }
 
             query = """select id,indicador
@@ -657,11 +658,14 @@ class CrearHabeasData(APIView):
         elif len(str(telefono)) not in [7,10]:
             return Response({'error':'numero tiene que ser de 7 o 10 digitos'},status=status.HTTP_400_BAD_REQUEST)
 
-        Habeasdata.objects.using(self.kwargs['db']).create(
+        try:
+            Habeasdata.objects.using(self.kwargs['db']).create(
             deudor_id=deudor_id,
             habeas_data=habeas_data,
             telefono=telefono)
-        print(len(str(telefono)) not in [7,10])
+        except:
+            return Response({'error':'Telefono Ya Existente'},status=status.HTTP_409_CONFLICT)
+        # print(len(str(telefono)) not in [7,10])
         if habeas_data == True and len(str(telefono)) == 7:
             # departamento = request.data.get('departaento')
             ciudad = request.data.get('ciudad')
