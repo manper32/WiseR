@@ -99,14 +99,16 @@ def SMS_Mas(tel='',msg='',lms='false',fls='false',pmu='true'):
         return b
 
 def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
-
+#################################
+#####################209-150
+    print(numip)
     if int(numip) > 200:
         # n = '150'
         connV = {
         'server' : '10.150.1.'+numip,
         'agc' : 'vicidial',
-        'user' : '6666',
-        'psw' : 'cobrando2012',
+        'user' : 'soporte',
+        'psw' : 'Bogota1234',
         'url' : 'http://{0}/{1}/non_agent_api.php'}
     else:
         # n = '152'
@@ -142,7 +144,8 @@ def AL_Vici(list_id,campaign,active,descr,list_name,local_call_time,numip):
     return b
 
 def ALe_Vici(phone,list_id,Vendor_lead,numip):
-
+#################################
+#####################209-150
     if int(numip) == 206:
         # n = '150'
         connV = {
