@@ -93,17 +93,17 @@ WSGI_APPLICATION = 'wr.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-name = 'postgres'
-user = 'postgres'
-psw = 'cobrando.bi.2020'
-host = '10.150.1.74'
-port = '5432'
-# ######### #
-# name = 'login'
-# user = 'bi'
-# psw = 'juanitoMeToco2020'
-# host = '10.150.1.77'
+# name = 'postgres'
+# user = 'postgres'
+# psw = 'cobrando.bi.2020'
+# host = '10.150.1.74'
 # port = '5432'
+# ######### #
+name = 'login'
+user = 'bi'
+psw = 'juanitoMeToco2020'
+host = '10.150.1.77'
+port = '5432'
 
 DATABASES = {
     'default': {
