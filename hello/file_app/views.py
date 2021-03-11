@@ -154,7 +154,7 @@ def ALe_Vici(phone,list_id,Vendor_lead,numip):
         'agc' : 'vicidial',
         'user' : 'soporte',
         'psw' : 'Bogota1234',
-        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number=9{4}&list_id={5}&vendor_lead_code={6}'}
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number=9{4}&list_id={5}&vendor_lead_code={6}&address3={7}&alt_phone={8}'}
     elif int(numip) == 209:
         # n = '150'
         connV = {
@@ -162,7 +162,7 @@ def ALe_Vici(phone,list_id,Vendor_lead,numip):
         'agc' : 'vicidial',
         'user' : 'soporte',
         'psw' : 'Bogota1234',
-        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number={4}&list_id={5}&vendor_lead_code={6}'}
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number={4}&list_id={5}&vendor_lead_code={6}&address3={7}&alt_phone={8}'}
     else:
         # n = '152'
         connV = {
@@ -170,7 +170,7 @@ def ALe_Vici(phone,list_id,Vendor_lead,numip):
         'agc' : 'vicidial',
         'user' : 'secetina',
         'psw' : '1233692646',
-        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number={4}&list_id={5}&vendor_lead_code={6}'}
+        'url' : 'http://{0}/{1}/non_agent_api.php?source=test&user={2}&pass={3}&function=add_lead&phone_number={4}&list_id={5}&vendor_lead_code={6}&address3={7}&alt_phone={8}'}
 
     # url
     # with open("/home/manuel/Documentos/WiseR/Vicidial/Templates/ALe_URL.txt","r") as f1:
@@ -182,7 +182,9 @@ def ALe_Vici(phone,list_id,Vendor_lead,numip):
                                     connV.get('psw'),
                                     phone,
                                     list_id,
-                                    Vendor_lead).replace('\n','')).text.split('|')])
+                                    Vendor_lead,
+                                    phone,
+                                    phone).replace('\n','')).text.split('|')])
     return b
 
 # Tipificaciones
