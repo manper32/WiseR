@@ -1,0 +1,619 @@
+--- ComoVamosLite 100% WiseR
+--- Pagos y compromisos por obligacion 
+--- IMPORTANTE en todos los AND unidad_id = {1} y {0} debe ir si o si el numero de la unidad para que el query funcione bien !!!
+
+with baseactual as (
+select
+	oa.obligacion_id,
+	o.deudor_id,
+	oa.estado,
+	oa.asignacion_id,
+	case
+		when row_number () over (partition by o.deudor_id
+	order by
+		o.deudor_id) = 1 then 1
+		else 0
+	end as unico,
+	(
+	select
+		fecha_apertura
+	from
+		{0}.asignaciones
+	where
+		estado is true
+		and unidad_id = {1}),
+	(
+	select
+		fecha_cierre
+	from
+		{0}.asignaciones
+	where
+		estado is true
+		and unidad_id = {1}),
+	d.deudor_nombre
+from
+	{0}.obligaciones_asignacion as oa
+inner join {0}.obligaciones as o on
+	o.obligacion_id = oa.obligacion_id
+inner join {0}.deudores as d on
+	d.deudor_id = o.deudor_id
+where
+	asignacion_id = (
+	select
+		asignacion_id
+	from
+		{0}.asignaciones
+	where
+		estado is true
+		and unidad_id = {1})),
+contador as (
+select
+	a.deudor_id,
+	a.qllamadas,
+	a.qsms,
+	a.qcorreo,
+	a.qwhatsapp,
+	a.qvisita,
+	a.qgescall,
+	a.qagentevirtual,
+	a.minfechgestion,
+	a.maxfechgestion,
+	a.qcontactos,
+	a.qnocontactos,
+	SUM(a.qllamadas + a.qsms + a.qcorreo + a.qwhatsapp + a.qvisita + a.qgescall + a.qagentevirtual) as total_gestiones
+from
+	(
+	select
+		distinct b.deudor_id,
+		SUM(case when b.canal = 'LLAMADA' then 1 else 0 end ) as qllamadas,
+		SUM(case when b.canal = 'SMS' then 1 else 0 end ) as qsms,
+		SUM(case when b.canal = 'EMAIL' then 1 else 0 end ) as qcorreo,
+		SUM(case when b.canal = 'WHATSAPP' then 1 else 0 end ) as qwhatsapp,
+		SUM(case when b.canal = 'VISITA' then 1 else 0 end ) as qvisita,
+		SUM(case when b.canal = 'GESCALL' then 1 else 0 end ) as qgescall,
+		SUM(case when b.canal = 'AGENTE VIRTUAL' then 1 else 0 end ) as qagentevirtual,
+		MIN(gestion_fecha) as minfechgestion,
+		MAX(gestion_fecha) as maxfechgestion,
+		SUM(case when b.indicador_contacto = 1 then 1 else 0 end) as qcontactos,
+		SUM(case when b.indicador_contacto = 0 then 1 else 0 end) as qnocontactos
+	from
+		(
+		select
+			g.usuario_id,
+			g.deudor_id,
+			g.gestion_fecha,
+			UPPER(g.canal) as canal,
+			ig.indicador_contacto,
+			ig.indicador_efectividad
+		from
+			{0}.gestiones as g
+		inner join {0}.tipificaciones as t on
+			t.id = g.id_tipificacion
+		inner join public.indicadores_general as ig on
+			ig.id = t.indicador
+		where
+			g.gestion_fecha::DATE >= (
+			select
+				fecha_apertura
+			from
+				{0}.asignaciones
+			where
+				estado is true
+				and unidad_id = {1})
+			and g.gestion_fecha::DATE <= (
+			select
+				fecha_cierre
+			from
+				{0}.asignaciones
+			where
+				estado is true
+				and unidad_id = {1})) as b
+	group by
+		b.deudor_id) as a
+group by
+	a.deudor_id,
+	a.qllamadas,
+	a.qsms,
+	a.qcorreo,
+	a.qwhatsapp,
+	a.qvisita,
+	a.qgescall,
+	a.qagentevirtual,
+	a.minfechgestion,
+	a.maxfechgestion,
+	a.qcontactos,
+	a.qnocontactos),
+ultimoalo as (
+select
+	g.deudor_id,
+	MAX(g.gestion_fecha) as fecha_ultimo_alo
+from
+	{0}.gestiones as g
+inner join {0}.tipificaciones as t on
+	t.id = g.id_tipificacion
+inner join public.indicadores_general as ig on
+	ig.id = t.indicador
+where
+	g.gestion_fecha::DATE >= (
+	select
+		fecha_apertura
+	from
+		{0}.asignaciones
+	where
+		estado is true
+		and unidad_id = {1})
+	and g.gestion_fecha::DATE <= (
+	select
+		fecha_cierre
+	from
+		{0}.asignaciones
+	where
+		estado is true
+		and unidad_id = {1})
+	and ig.indicador not in ('MENSAJE', 'NO CONTACTADO')
+	and ig.indicador_contacto = 1
+group by
+	g.deudor_id ),
+mejorgestionhoy as (
+select
+	b.*
+from
+	(
+	select
+		g.gestion_id ,
+		g.tarea_id,
+		g.gestion_fecha,
+		extract (hour
+	from
+		g.gestion_fecha) hora_gestion,
+		g.usuario_id,
+		g.deudor_id,
+		g.asignacion_id,
+		g.telefono,
+		UPPER(g.canal) as canal,
+		ig.indicador,
+		row_number () over (partition by g.deudor_id
+	order by
+		g.deudor_id,
+		t.prioridad) as rownumber,
+		uw.nombre,
+		ig.indicador_contacto,
+		ig.indicador_efectividad
+	from
+		{0}.gestiones as g
+	inner join {0}.tipificaciones as t on
+		t.id = g.id_tipificacion
+	inner join public.indicadores_general as ig on
+		ig.id = t.indicador
+	left join public.usuarios_wiser as uw on
+		uw.id::VARCHAR = g.usuario_id::VARCHAR
+	where
+		g.gestion_fecha::DATE = NOW()::DATE) as b
+where
+	rownumber = 1),
+mejorgestionactual as (
+select
+	b.*
+from
+	(
+	select
+		g.gestion_id ,
+		g.tarea_id,
+		g.gestion_fecha,
+		extract (hour
+	from
+		g.gestion_fecha) hora_gestion,
+		g.usuario_id,
+		g.deudor_id,
+		g.asignacion_id,
+		g.telefono,
+		g.id_tipificacion,
+		UPPER(g.canal) as canal,
+		ig.indicador,
+		row_number () over (partition by g.deudor_id
+	order by
+		g.deudor_id,
+		t.prioridad) as rownumber,
+		uw.nombre,
+		ig.indicador_contacto,
+		ig.indicador_efectividad
+	from
+		{0}.gestiones as g
+	inner join {0}.tipificaciones as t on
+		t.id = g.id_tipificacion
+	inner join public.indicadores_general as ig on
+		ig.id = t.indicador
+	left join public.usuarios_wiser as uw on
+		uw.id::VARCHAR = g.usuario_id::VARCHAR
+	where
+		g.gestion_fecha::DATE >= (
+		select
+			fecha_apertura
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1})
+		and g.gestion_fecha::DATE <= (
+		select
+			fecha_cierre
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1})) as b
+where
+	rownumber = 1),
+mejorgestion1 as (
+select
+	b.*
+from
+	(
+	select
+		g.gestion_id ,
+		g.tarea_id,
+		g.gestion_fecha,
+		extract (hour
+	from
+		g.gestion_fecha) hora_gestion,
+		g.usuario_id,
+		g.deudor_id,
+		g.asignacion_id,
+		g.telefono,
+		UPPER(g.canal) as canal,
+		ig.indicador,
+		row_number () over (partition by g.deudor_id
+	order by
+		g.deudor_id,
+		t.prioridad) as rownumber
+	from
+		{0}.gestiones as g
+	inner join {0}.tipificaciones as t on
+		t.id = g.id_tipificacion
+	inner join public.indicadores_general as ig on
+		ig.id = t.indicador
+	where
+		g.gestion_fecha::DATE >= ((
+		select
+			fecha_apertura
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '1 month'::interval)::DATE
+		and g.gestion_fecha::DATE <= ((
+		select
+			fecha_cierre
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '1 month'::interval)::DATE) as b
+where
+	rownumber = 1),
+mejorgestion2 as (
+select
+	b.*
+from
+	(
+	select
+		g.gestion_id ,
+		g.tarea_id,
+		g.gestion_fecha,
+		extract (hour
+	from
+		g.gestion_fecha) hora_gestion,
+		g.usuario_id,
+		g.deudor_id,
+		g.asignacion_id,
+		g.telefono,
+		UPPER(g.canal) as canal,
+		ig.indicador,
+		row_number () over (partition by g.deudor_id
+	order by
+		g.deudor_id,
+		t.prioridad) as rownumber
+	from
+		{0}.gestiones as g
+	inner join {0}.tipificaciones as t on
+		t.id = g.id_tipificacion
+	inner join public.indicadores_general as ig on
+		ig.id = t.indicador
+	where
+		g.gestion_fecha::DATE >= ((
+		select
+			fecha_apertura
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '2 month'::interval)::DATE
+		and g.gestion_fecha::DATE <= ((
+		select
+			fecha_cierre
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '2 month'::interval)::DATE) as b
+where
+	rownumber = 1),
+mejorgestion3 as (
+select
+	b.*
+from
+	(
+	select
+		g.gestion_id ,
+		g.tarea_id,
+		g.gestion_fecha,
+		extract (hour
+	from
+		g.gestion_fecha) hora_gestion,
+		g.usuario_id,
+		g.deudor_id,
+		g.asignacion_id,
+		g.telefono,
+		UPPER(g.canal) as canal,
+		ig.indicador,
+		row_number () over (partition by g.deudor_id
+	order by
+		g.deudor_id,
+		t.prioridad) as rownumber
+	from
+		{0}.gestiones as g
+	inner join {0}.tipificaciones as t on
+		t.id = g.id_tipificacion
+	inner join public.indicadores_general as ig on
+		ig.id = t.indicador
+	where
+		g.gestion_fecha::DATE >= ((
+		select
+			fecha_apertura
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '3 month'::interval)::DATE
+		and g.gestion_fecha::DATE <= ((
+		select
+			fecha_cierre
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '3 month'::interval)::DATE) as b
+where
+	rownumber = 1),
+mejorgestion4 as (
+select
+	b.*
+from
+	(
+	select
+		g.gestion_id,
+		g.tarea_id,
+		g.gestion_fecha,
+		extract (hour
+	from
+		g.gestion_fecha) hora_gestion,
+		g.usuario_id,
+		g.deudor_id,
+		g.asignacion_id,
+		g.telefono,
+		UPPER(g.canal) as canal,
+		ig.indicador,
+		row_number () over (partition by g.deudor_id
+	order by
+		g.deudor_id,
+		t.prioridad) as rownumber
+	from
+		{0}.gestiones as g
+	inner join {0}.tipificaciones as t on
+		t.id = g.id_tipificacion
+	inner join public.indicadores_general as ig on
+		ig.id = t.indicador
+	where
+		g.gestion_fecha::DATE >= ((
+		select
+			fecha_apertura
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '4 month'::interval)::DATE
+		and g.gestion_fecha::DATE <= ((
+		select
+			fecha_cierre
+		from
+			{0}.asignaciones
+		where
+			estado is true
+			and unidad_id = {1}) - '4 month'::interval)::DATE) as b
+where
+	rownumber = 1),
+compromisos as (
+select
+	cm.fecha_pago,
+	cm.fecha_compromiso,
+	cm.valor,
+	cm.usuario_id,
+	cm.nombre,
+	cm.obligacion_id
+from
+	(
+	select
+		c.fecha_pago,
+		c.fecha_compromiso,
+		c.valor,
+		c.obligacion_id,
+		g.usuario_id,
+		u.nombre,
+		c.gestion_id,
+		row_number () over (partition by g.deudor_id
+	order by
+		c.obligacion_id,
+		c.gestion_id desc) as rownumber
+	from
+		{0}.compromiso as c
+	inner join {0}.gestiones as g on
+		g.gestion_id = c.gestion_id
+	inner join public.usuarios_wiser as u on
+		u.id::VARCHAR = g.usuario_id::VARCHAR )as cm
+where
+	cm.rownumber = 1),
+totalpagos as (
+select
+	obligacion_id,
+	MAX(pago_fecha) as pagofecha,
+	SUM(pago_valor) as valortotal
+from
+	{0}.pagos
+where
+	pago_fecha >= (
+	select
+		fecha_apertura
+	from
+		{0}.asignaciones
+	where
+		estado is true
+		and unidad_id = {1})
+	and pago_fecha <= (
+	select
+		fecha_cierre
+	from
+		{0}.asignaciones
+	where
+		estado is true
+		and unidad_id = {1})
+group by
+	obligacion_id),
+telpositivo as (
+select
+	p.deudor_id,
+	p.telefono,
+	p.gestion_fecha,
+	p.cantidad
+from
+	(
+	select
+		g.deudor_id,
+		g.telefono,
+		g.gestion_fecha,
+		COUNT(1) cantidad,
+		row_number () over (partition by g.deudor_id
+	order by
+		g.deudor_id,
+		g.gestion_fecha,
+		COUNT(1) desc ) contador
+	from
+		{0}.gestiones as g
+	left join {0}.tipificaciones as t on
+		t.id = g.id_tipificacion
+	left join public.indicadores_general as i on
+		i.id = t.indicador
+	where
+		i.indicador_contacto = 1
+	group by
+		g.deudor_id,
+		g.telefono,
+		g.gestion_fecha) as p
+where
+	contador = 1)
+select
+	distinct row_number () over (partition by NOW()
+order by
+	NOW()),
+	ba.deudor_id as cedula,
+	ba.obligacion_id as obligacion,
+	ba.unico,
+	ba.deudor_nombre as nombre,
+	mg4.indicador as perfil_mes_4,
+	mg3.indicador as perfil_mes_3,
+	mg2.indicador as perfil_mes_2,
+	mg1.indicador as perfil_mes_1,
+	c.minfechgestion as primer_gestion,
+	c.maxfechgestion as ultima_gestion,
+	ua.fecha_ultimo_alo as ultimo_alo,
+	case
+		when mga.indicador_contacto is null
+		or mga.indicador_contacto = 0 then 'NO CONTACTO'
+		else 'CONTACTO'
+	end as estado_contacto,
+	mga.indicador as mejor_gestion_mes_actual,
+	mga.nombre as nombre_asesor_mejor_gestion,
+	mga.gestion_fecha as fecha_mejor_gestion,
+	mga.telefono as telefono_mejor_gestion,
+	mh.indicador as mejor_gestion_hoy,
+	mh.usuario_id as usuario_mejor_gestion_hoy,
+	c.qllamadas as cantidad_llamadas,
+	c.qsms as cantidad_sms,
+	c.qcorreo as cantidad_email,
+	c.qwhatsapp as cantidad_whatsapp,
+	c.qvisita as cantidad_visitas,
+	c.qgescall as cantidad_gescall,
+	c.qagentevirtual as cantidad_agente_virtual,
+	c.total_gestiones,
+	c.qcontactos as cantidad_contacto,
+	c.qnocontactos as cantidad_no_contacto,
+	case
+		when cp.valor is null then null
+		else CONCAT('$ ', cp.valor)
+	end as valor_compromiso,
+	cp.fecha_pago as fecha_compromiso,
+	cp.nombre as nombre_usuario_compromiso,
+	case
+		when cp.fecha_pago is not null
+		and p.valortotal >= cp.valor then 'Cumplido'
+		when cp.fecha_pago is not null
+		and p.valortotal < cp.valor then 'Pago parcial'
+		when cp.fecha_pago is not null
+		and cp.fecha_pago >= NOW()::DATE then 'Pendiente'
+		when cp.fecha_pago is not null
+		and p.valortotal is null
+		--or p.valortotal <= 0
+		and cp.fecha_pago < NOW()::DATE then 'Incumplido'
+		when cp.fecha_pago is null
+		and p.valortotal is not null then 'Pago sin compromiso'
+		when cp.fecha_pago is null
+		and p.valortotal is null then 'Sin compromiso'
+	end as estado_acuerdo,
+	case
+		when p.valortotal is null then null
+		else CONCAT('$ ', p.valortotal)
+	end as valor_a_pagar,
+	p.pagofecha as fecha_pago,
+	tp.telefono as telefono_positivo,
+	tp.gestion_fecha as fecha_telefono_positivo,
+	tp.cantidad as cantidad_telefono_positivo,
+	cp.fecha_compromiso as fecha_compromiso,
+	od.descuento,
+	od.valor_descuento,
+	od.valor_pago,
+	ba.estado
+from
+	baseactual as ba
+left join mejorgestionactual as mga on
+	mga.deudor_id = ba.deudor_id
+left join contador as c on
+	c.deudor_id = ba.deudor_id
+left join mejorgestion1 as mg1 on
+	mg1.deudor_id = ba.deudor_id
+left join mejorgestion1 as mg2 on
+	mg2.deudor_id = ba.deudor_id
+left join mejorgestion1 as mg3 on
+	mg3.deudor_id = ba.deudor_id
+left join mejorgestion1 as mg4 on
+	mg4.deudor_id = ba.deudor_id
+left join compromisos as cp on
+	cp.obligacion_id = ba.obligacion_id
+left join mejorgestionhoy as mh on
+	mh.deudor_id = ba.deudor_id
+left join ultimoalo as ua on
+	ua.deudor_id = ba.deudor_id
+left join telpositivo as tp on
+	tp.deudor_id = ba.deudor_id
+left join totalpagos as p on
+	p.obligacion_id = ba.obligacion_id
+left join cbpo_claro_wiser.obligaciones_descuentos od on 
+	ba.obligacion_id = od.obligacion_id;
