@@ -64,6 +64,7 @@ services:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - static:/opt/services/djangoapp/static
       - media:/opt/services/djangoapp/media
+      - /home/desarrollo/docker-nginx-postgres-django/hello/CV/templates/ComoVamos:/home
     links:
       - djangoapp
     networks:

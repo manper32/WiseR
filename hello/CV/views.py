@@ -48,11 +48,11 @@ class CVClaro(APIView):
         #     query2 = f2.read()
         # with open("/home/manuel/Documentos/WiseR/CVClaro/hello/ClaroCV/CV/templates/Cor_Claro.txt","r") as f3:
         #     query3 = f3.read()
-        with open("./hello/CV/templates/ClaroCV.txt","r") as f1:
+        with open("./CV/templates/ClaroCV.txt","r") as f1:
             query1 = f1.read()
-        with open("./hello/CV/templates/Tel_Claro.txt","r") as f2:
+        with open("./CV/templates/Tel_Claro.txt","r") as f2:
             query2 = f2.read()
-        with open("./hello/CV/templates/Cor_Claro.txt","r") as f3:
+        with open("./CV/templates/Cor_Claro.txt","r") as f3:
             query3 = f3.read()
         anwr = pd.read_sql(query1.format('cbpo_claro_wiser','16'),psycopg2.connect(**connP))
         anwr['cedula1'] = anwr['cedula'].str.replace(r"[^0-9]",'',regex=True)
@@ -244,7 +244,7 @@ class CVClaro(APIView):
                     ,how = "left",indicator = False)
 
         # cv.to_csv('/home/manuel/Documentos/WiseR/CVClaro/hello/ClaroCV/CV/templates/ComoVamos/CV.csv',index=False,sep='|',encoding='utf-8-sig')
-        cv.to_csv("./hello/CV/templates/ComoVamos/CV.csv",index=False,sep='|',encoding='utf-8-sig')
+        cv.to_csv("./CV/templates/ComoVamos/CV.csv",index=False,sep='|',encoding='utf-8-sig')
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'ClaroCV-end',time()-initial)
         return Response({'Time':time()-initial}, status=status.HTTP_201_CREATED)
         # except:
