@@ -54,7 +54,7 @@ class CVClaro(APIView):
             query2 = f2.read()
         with open("./CV/templates/Cor_Claro.txt","r") as f3:
             query3 = f3.read()
-        anwr = pd.read_sql(query1.format('cbpo_claro_wiser','16'),psycopg2.connect(**connP))
+        anwr = pd.read_sql(query1,psycopg2.connect(**connP))#.format('cbpo_claro_wiser','16')
         anwr['cedula1'] = anwr['cedula'].str.replace(r"[^0-9]",'',regex=True)
         anwr['obligacion1'] = anwr['obligacion'].str.replace(r"[^0-9]",'',regex=True)
         anwr['valor_a_pagar'] = anwr['valor_a_pagar'].str.replace(r"[^0-9]",'',regex=True)
@@ -70,10 +70,10 @@ class CVClaro(APIView):
                     how = 'left',
                     indicator = False).drop(['row_number_y'], axis=1)
 
-        anwr['saldo_pendiente'] = anwr['valor_pago'].fillna(0) - anwr['valor_a_pagar'].fillna(0).astype(int)
+        anwr['saldo_pendiente'] = None
 
         today = datetime.today().strftime('01-%m-%Y')
-        client = MongoClient(host)
+        client = MongoClient(connP.get('host'))
         # client.list_database_names()
         db = client['cbpo_claro_wiser']
         # db.list_collection_names()
@@ -97,7 +97,7 @@ class CVClaro(APIView):
                             'Montoinicial':'max',#monto_inicial
                             'ModInitCta':'max',#monto_ini_cuenta
                             'DeudaRealCuenta':'max',#deuda_real
-                            'Segmento_BPO':'max',#segmentobpo
+                            'Segmento_BPO':'min',#segmentobpo
                             })
                 
         a['deudor_id'] = a['deudor_id'].str.replace(r"[^0-9]",'',regex=True)
@@ -108,6 +108,10 @@ class CVClaro(APIView):
                     how = 'left',
                     indicator = False).drop(['deudor_id','obligacion_id','cedula1','obligacion1']
                                             , axis=1)
+                                            
+        cv['valor_pago']=np.where(cv['valor_pago'].fillna(0)==0,cv['ModInitCta'].astype(float),cv['valor_pago'].fillna(0))
+        cv['saldo_pendiente'] = cv['valor_pago'] - cv['valor_a_pagar'].fillna(0).astype(int)
+        cv['mejor_gestion_mes_actual']=np.where(cv['saldo_pendiente']<=0,'YA PAGO',cv['mejor_gestion_mes_actual'])
 
         cv['descuento'] = '%'+cv['descuento'].fillna(0).astype(int).astype(str)
         for i in ['Montoinicial','ModInitCta','DeudaRealCuenta','saldo_pendiente',
@@ -134,16 +138,16 @@ class CVClaro(APIView):
             'phone',# 'telefono_mejor_gestion',
             'indicador_hoy',#'mejor_gestion_hoy',
             'usuario_mejor_gestion_hoy',
-            'llamadas',# 'cantidad_llamadas',
-            'sms',# 'cantidad_sms',
-            'correos',#'cantidad_email',
-            'whatsapp',# 'cantidad_whatsapp',
-            'visitas',# 'cantidad_visitas',
-            'gescall',# 'cantidad_gescall',
-            'agente_virtual',# 'cantidad_agente_virtual',-----------se incluye????
+            'cantidad_llamadas',
+            'cantidad_sms',
+            'cantidad_email',
+            'cantidad_whatsapp',
+            'cantidad_visitas',
+            'cantidad_gescall',
+            'cantidad_agente_virtual',#-----------se incluye????
             'total_gestiones',# 'total_gestiones',
             'cantidad_contacto',#--------------------------------se incluye??
-            'no_contacto',# 'cantidad_no_contacto',
+            'cantidad_no_contacto',
             'valor_compromiso',#'valor_compromiso',
             'fecha_pago_compromiso',# 'fecha_compromiso',
             'nombre_usuario_compromiso',#------------------------se incluye??
@@ -158,6 +162,7 @@ class CVClaro(APIView):
             'valor_descuento',#'valor_descuento',
             'valor_a_pagar',#'valor_pago',
             'estado',#estado
+            'cantidad_no_cotact',#---------------query
             'tipo_cliente',
             'saldo_pendiente',
             'crmorigen',# 'CRMOrigen',
@@ -218,14 +223,17 @@ class CVClaro(APIView):
         # contactabilidad
         ,'indicador_hoy'
         # repeticion--------calcular
-        ,'llamadas'
-        ,'sms'
-        ,'correos'
-        ,'gescall'
-        ,'whatsapp'
-        ,'visitas'
-        ,'no_contacto'
+        ,'cantidad_llamadas'
+        ,'cantidad_sms'
+        ,'cantidad_email'
+        ,'cantidad_whatsapp'
+        ,'cantidad_visitas'
+        ,'cantidad_gescall'
+        ,'cantidad_agente_virtual'
+        ,'cantidad_no_cotact'
         ,'total_gestiones'
+        ,'cantidad_contacto'
+        ,'cantidad_no_contacto'
         ,'telefono_positivo'
         ,'fec_ultima_marcacion']
 

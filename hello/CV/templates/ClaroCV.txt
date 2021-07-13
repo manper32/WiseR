@@ -1,7 +1,3 @@
---- ComoVamosLite 100% WiseR
---- Pagos y compromisos por obligacion 
---- IMPORTANTE en todos los AND unidad_id = {1} y {0} debe ir si o si el numero de la unidad para que el query funcione bien !!!
-
 with baseactual as (
 select
 	oa.obligacion_id,
@@ -18,34 +14,34 @@ select
 	select
 		fecha_apertura
 	from
-		{0}.asignaciones
+		cbpo_claro_wiser.asignaciones
 	where
 		estado is true
-		and unidad_id = {1}),
+		and unidad_id = 16),
 	(
 	select
 		fecha_cierre
 	from
-		{0}.asignaciones
+		cbpo_claro_wiser.asignaciones
 	where
 		estado is true
-		and unidad_id = {1}),
+		and unidad_id = 16),
 	d.deudor_nombre
 from
-	{0}.obligaciones_asignacion as oa
-inner join {0}.obligaciones as o on
+	cbpo_claro_wiser.obligaciones_asignacion as oa
+inner join cbpo_claro_wiser.obligaciones as o on
 	o.obligacion_id = oa.obligacion_id
-inner join {0}.deudores as d on
+inner join cbpo_claro_wiser.deudores as d on
 	d.deudor_id = o.deudor_id
 where
 	asignacion_id = (
 	select
 		asignacion_id
 	from
-		{0}.asignaciones
+		cbpo_claro_wiser.asignaciones
 	where
 		estado is true
-		and unidad_id = {1})),
+		and unidad_id = 16)),
 contador as (
 select
 	a.deudor_id,
@@ -60,7 +56,8 @@ select
 	a.maxfechgestion,
 	a.qcontactos,
 	a.qnocontactos,
-	SUM(a.qllamadas + a.qsms + a.qcorreo + a.qwhatsapp + a.qvisita + a.qgescall + a.qagentevirtual) as total_gestiones
+	SUM(a.qllamadas + a.qsms + a.qcorreo + a.qwhatsapp + a.qvisita + a.qgescall + a.qagentevirtual) as total_gestiones,
+	a.qnocontact
 from
 	(
 	select
@@ -75,7 +72,8 @@ from
 		MIN(gestion_fecha) as minfechgestion,
 		MAX(gestion_fecha) as maxfechgestion,
 		SUM(case when b.indicador_contacto = 1 then 1 else 0 end) as qcontactos,
-		SUM(case when b.indicador_contacto = 0 then 1 else 0 end) as qnocontactos
+		SUM(case when b.indicador_contacto = 0 then 1 else 0 end) as qnocontactos,
+		SUM(case when upper(b.canal) = 'VICIDIAL' then 1 else 0 end ) as qnocontact
 	from
 		(
 		select
@@ -86,8 +84,8 @@ from
 			ig.indicador_contacto,
 			ig.indicador_efectividad
 		from
-			{0}.gestiones as g
-		inner join {0}.tipificaciones as t on
+			cbpo_claro_wiser.gestiones as g
+		inner join cbpo_claro_wiser.tipificaciones as t on
 			t.id = g.id_tipificacion
 		inner join public.indicadores_general as ig on
 			ig.id = t.indicador
@@ -96,18 +94,18 @@ from
 			select
 				fecha_apertura
 			from
-				{0}.asignaciones
+				cbpo_claro_wiser.asignaciones
 			where
 				estado is true
-				and unidad_id = {1})
+				and unidad_id = 16)
 			and g.gestion_fecha::DATE <= (
 			select
 				fecha_cierre
 			from
-				{0}.asignaciones
+				cbpo_claro_wiser.asignaciones
 			where
 				estado is true
-				and unidad_id = {1})) as b
+				and unidad_id = 16)) as b
 	group by
 		b.deudor_id) as a
 group by
@@ -122,14 +120,15 @@ group by
 	a.minfechgestion,
 	a.maxfechgestion,
 	a.qcontactos,
-	a.qnocontactos),
+	a.qnocontactos,
+	a.qnocontact),
 ultimoalo as (
 select
 	g.deudor_id,
 	MAX(g.gestion_fecha) as fecha_ultimo_alo
 from
-	{0}.gestiones as g
-inner join {0}.tipificaciones as t on
+	cbpo_claro_wiser.gestiones as g
+inner join cbpo_claro_wiser.tipificaciones as t on
 	t.id = g.id_tipificacion
 inner join public.indicadores_general as ig on
 	ig.id = t.indicador
@@ -138,18 +137,18 @@ where
 	select
 		fecha_apertura
 	from
-		{0}.asignaciones
+		cbpo_claro_wiser.asignaciones
 	where
 		estado is true
-		and unidad_id = {1})
+		and unidad_id = 16)
 	and g.gestion_fecha::DATE <= (
 	select
 		fecha_cierre
 	from
-		{0}.asignaciones
+		cbpo_claro_wiser.asignaciones
 	where
 		estado is true
-		and unidad_id = {1})
+		and unidad_id = 16)
 	and ig.indicador not in ('MENSAJE', 'NO CONTACTADO')
 	and ig.indicador_contacto = 1
 group by
@@ -175,13 +174,14 @@ from
 		row_number () over (partition by g.deudor_id
 	order by
 		g.deudor_id,
-		t.prioridad) as rownumber,
+		t.prioridad,
+		case when UPPER(canal) in ('LLAMADA','AGENTE_VIRTUAL') then 1 else 0 end) as rownumber,
 		uw.nombre,
 		ig.indicador_contacto,
 		ig.indicador_efectividad
 	from
-		{0}.gestiones as g
-	inner join {0}.tipificaciones as t on
+		cbpo_claro_wiser.gestiones as g
+	inner join cbpo_claro_wiser.tipificaciones as t on
 		t.id = g.id_tipificacion
 	inner join public.indicadores_general as ig on
 		ig.id = t.indicador
@@ -200,9 +200,7 @@ from
 		g.gestion_id ,
 		g.tarea_id,
 		g.gestion_fecha,
-		extract (hour
-	from
-		g.gestion_fecha) hora_gestion,
+		extract (hour from g.gestion_fecha) hora_gestion,
 		g.usuario_id,
 		g.deudor_id,
 		g.asignacion_id,
@@ -213,35 +211,45 @@ from
 		row_number () over (partition by g.deudor_id
 	order by
 		g.deudor_id,
-		t.prioridad) as rownumber,
+		t.prioridad,
+		case when t.prioridad = 5 and UPPER(canal) in ('EMAIL','SMS','GESCALL') and t1.obligacion_id is not null then 1 else 0 end desc,
+		case when UPPER(canal) in ('LLAMADA','AGENTE_VIRTUAL') then 1 else 0 end desc ) as rownumber,
 		uw.nombre,
 		ig.indicador_contacto,
-		ig.indicador_efectividad
+		ig.indicador_efectividad 
 	from
-		{0}.gestiones as g
-	inner join {0}.tipificaciones as t on
+		cbpo_claro_wiser.gestiones as g
+	inner join cbpo_claro_wiser.tipificaciones as t on
 		t.id = g.id_tipificacion
 	inner join public.indicadores_general as ig on
 		ig.id = t.indicador
 	left join public.usuarios_wiser as uw on
 		uw.id::VARCHAR = g.usuario_id::VARCHAR
+	left join (select distinct t1.obligacion_id,t1.deudor_id
+				from cbpo_claro_wiser.obligaciones t1 
+				inner join (select obligacion_id ,sum(pago_valor) 
+							from cbpo_claro_wiser.pagos
+							where pago_fecha between date_trunc('month',current_date) and current_date + interval '1 day'
+							group by obligacion_id) t2
+							on t1.obligacion_id = t2.obligacion_id) t1
+	on g.deudor_id = t1.deudor_id
 	where
 		g.gestion_fecha::DATE >= (
 		select
 			fecha_apertura
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1})
+			and unidad_id = 16)
 		and g.gestion_fecha::DATE <= (
 		select
 			fecha_cierre
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1})) as b
+			and unidad_id = 16)) as b
 where
 	rownumber = 1),
 mejorgestion1 as (
@@ -265,30 +273,40 @@ from
 		row_number () over (partition by g.deudor_id
 	order by
 		g.deudor_id,
-		t.prioridad) as rownumber
+		t.prioridad,
+		case when t.prioridad = 5 and UPPER(canal) in ('EMAIL','SMS','GESCALL') and t1.obligacion_id is not null then 1 else 0 end desc,
+		case when UPPER(canal) in ('LLAMADA','AGENTE_VIRTUAL') then 1 else 0 end desc) as rownumber
 	from
-		{0}.gestiones as g
-	inner join {0}.tipificaciones as t on
+		cbpo_claro_wiser.gestiones as g
+	inner join cbpo_claro_wiser.tipificaciones as t on
 		t.id = g.id_tipificacion
 	inner join public.indicadores_general as ig on
 		ig.id = t.indicador
+	left join (select distinct t1.obligacion_id,t1.deudor_id
+			from cbpo_claro_wiser.obligaciones t1 
+			inner join (select obligacion_id ,sum(pago_valor) 
+						from cbpo_claro_wiser.pagos
+						where pago_fecha between date_trunc('month',current_date) - interval '1 month' and date_trunc('month',current_date) - interval '1 day'
+						group by obligacion_id) t2
+						on t1.obligacion_id = t2.obligacion_id) t1
+	on g.deudor_id = t1.deudor_id
 	where
 		g.gestion_fecha::DATE >= ((
 		select
 			fecha_apertura
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '1 month'::interval)::DATE
+			and unidad_id = 16) - '1 month'::interval)::DATE
 		and g.gestion_fecha::DATE <= ((
 		select
 			fecha_cierre
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '1 month'::interval)::DATE) as b
+			and unidad_id = 16) - '1 month'::interval)::DATE) as b
 where
 	rownumber = 1),
 mejorgestion2 as (
@@ -312,30 +330,40 @@ from
 		row_number () over (partition by g.deudor_id
 	order by
 		g.deudor_id,
-		t.prioridad) as rownumber
+		t.prioridad,
+		case when t.prioridad = 5 and UPPER(canal) in ('EMAIL','SMS','GESCALL') and t1.obligacion_id is not null then 1 else 0 end desc,
+		case when UPPER(canal) in ('LLAMADA','AGENTE_VIRTUAL') then 1 else 0 end desc) as rownumber
 	from
-		{0}.gestiones as g
-	inner join {0}.tipificaciones as t on
+		cbpo_claro_wiser.gestiones as g
+	inner join cbpo_claro_wiser.tipificaciones as t on
 		t.id = g.id_tipificacion
 	inner join public.indicadores_general as ig on
 		ig.id = t.indicador
+	left join (select distinct t1.obligacion_id,t1.deudor_id
+			from cbpo_claro_wiser.obligaciones t1 
+			inner join (select obligacion_id ,sum(pago_valor) 
+						from cbpo_claro_wiser.pagos
+						where pago_fecha between date_trunc('month',current_date) - interval '2 month' and (date_trunc('month',current_date) - interval '1 day') - interval '1 month'
+						group by obligacion_id) t2
+						on t1.obligacion_id = t2.obligacion_id) t1
+	on g.deudor_id = t1.deudor_id
 	where
 		g.gestion_fecha::DATE >= ((
 		select
 			fecha_apertura
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '2 month'::interval)::DATE
+			and unidad_id = 16) - '2 month'::interval)::DATE
 		and g.gestion_fecha::DATE <= ((
 		select
 			fecha_cierre
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '2 month'::interval)::DATE) as b
+			and unidad_id = 16) - '2 month'::interval)::DATE) as b
 where
 	rownumber = 1),
 mejorgestion3 as (
@@ -359,30 +387,40 @@ from
 		row_number () over (partition by g.deudor_id
 	order by
 		g.deudor_id,
-		t.prioridad) as rownumber
+		t.prioridad,
+		case when t.prioridad = 5 and UPPER(canal) in ('EMAIL','SMS','GESCALL') and t1.obligacion_id is not null then 1 else 0 end desc,
+		case when UPPER(canal) in ('LLAMADA','AGENTE_VIRTUAL') then 1 else 0 end desc) as rownumber
 	from
-		{0}.gestiones as g
-	inner join {0}.tipificaciones as t on
+		cbpo_claro_wiser.gestiones as g
+	inner join cbpo_claro_wiser.tipificaciones as t on
 		t.id = g.id_tipificacion
 	inner join public.indicadores_general as ig on
 		ig.id = t.indicador
+	left join (select distinct t1.obligacion_id,t1.deudor_id
+		from cbpo_claro_wiser.obligaciones t1 
+		inner join (select obligacion_id ,sum(pago_valor) 
+					from cbpo_claro_wiser.pagos
+					where pago_fecha between date_trunc('month',current_date) - interval '3 month' and (date_trunc('month',current_date) - interval '1 day') - interval '2 month'
+					group by obligacion_id) t2
+					on t1.obligacion_id = t2.obligacion_id) t1
+	on g.deudor_id = t1.deudor_id
 	where
 		g.gestion_fecha::DATE >= ((
 		select
 			fecha_apertura
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '3 month'::interval)::DATE
+			and unidad_id = 16) - '3 month'::interval)::DATE
 		and g.gestion_fecha::DATE <= ((
 		select
 			fecha_cierre
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '3 month'::interval)::DATE) as b
+			and unidad_id = 16) - '3 month'::interval)::DATE) as b
 where
 	rownumber = 1),
 mejorgestion4 as (
@@ -406,30 +444,40 @@ from
 		row_number () over (partition by g.deudor_id
 	order by
 		g.deudor_id,
-		t.prioridad) as rownumber
+		t.prioridad,
+		case when t.prioridad = 5 and UPPER(canal) in ('EMAIL','SMS','GESCALL') and t1.obligacion_id is not null then 1 else 0 end desc,
+		case when UPPER(canal) in ('LLAMADA','AGENTE_VIRTUAL') then 1 else 0 end desc) as rownumber
 	from
-		{0}.gestiones as g
-	inner join {0}.tipificaciones as t on
+		cbpo_claro_wiser.gestiones as g
+	inner join cbpo_claro_wiser.tipificaciones as t on
 		t.id = g.id_tipificacion
 	inner join public.indicadores_general as ig on
 		ig.id = t.indicador
+	left join (select distinct t1.obligacion_id,t1.deudor_id
+		from cbpo_claro_wiser.obligaciones t1 
+		inner join (select obligacion_id ,sum(pago_valor) 
+					from cbpo_claro_wiser.pagos
+					where pago_fecha between date_trunc('month',current_date) - interval '4 month' and (date_trunc('month',current_date) - interval '1 day') - interval '3 month'
+					group by obligacion_id) t2
+					on t1.obligacion_id = t2.obligacion_id) t1
+	on g.deudor_id = t1.deudor_id
 	where
 		g.gestion_fecha::DATE >= ((
 		select
 			fecha_apertura
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '4 month'::interval)::DATE
+			and unidad_id = 16) - '4 month'::interval)::DATE
 		and g.gestion_fecha::DATE <= ((
 		select
 			fecha_cierre
 		from
-			{0}.asignaciones
+			cbpo_claro_wiser.asignaciones
 		where
 			estado is true
-			and unidad_id = {1}) - '4 month'::interval)::DATE) as b
+			and unidad_id = 16) - '4 month'::interval)::DATE) as b
 where
 	rownumber = 1),
 compromisos as (
@@ -455,10 +503,10 @@ from
 		c.obligacion_id,
 		c.gestion_id desc) as rownumber
 	from
-		{0}.compromiso as c
-	inner join {0}.gestiones as g on
+		cbpo_claro_wiser.compromiso as c
+	inner join cbpo_claro_wiser.gestiones as g on
 		g.gestion_id = c.gestion_id
-	inner join public.usuarios_wiser as u on
+	left join public.usuarios_wiser as u on
 		u.id::VARCHAR = g.usuario_id::VARCHAR )as cm
 where
 	cm.rownumber = 1),
@@ -468,24 +516,24 @@ select
 	MAX(pago_fecha) as pagofecha,
 	SUM(pago_valor) as valortotal
 from
-	{0}.pagos
+	cbpo_claro_wiser.pagos
 where
 	pago_fecha >= (
 	select
 		fecha_apertura
 	from
-		{0}.asignaciones
+		cbpo_claro_wiser.asignaciones
 	where
 		estado is true
-		and unidad_id = {1})
+		and unidad_id = 16)
 	and pago_fecha <= (
 	select
 		fecha_cierre
 	from
-		{0}.asignaciones
+		cbpo_claro_wiser.asignaciones
 	where
 		estado is true
-		and unidad_id = {1})
+		and unidad_id = 16)
 group by
 	obligacion_id),
 telpositivo as (
@@ -507,8 +555,8 @@ from
 		g.gestion_fecha,
 		COUNT(1) desc ) contador
 	from
-		{0}.gestiones as g
-	left join {0}.tipificaciones as t on
+		cbpo_claro_wiser.gestiones as g
+	left join cbpo_claro_wiser.tipificaciones as t on
 		t.id = g.id_tipificacion
 	left join public.indicadores_general as i on
 		i.id = t.indicador
@@ -541,7 +589,7 @@ order by
 		else 'CONTACTO'
 	end as estado_contacto,
 	mga.indicador as mejor_gestion_mes_actual,
-	mga.nombre as nombre_asesor_mejor_gestion,
+	coalesce(mga.nombre,mga.usuario_id) as nombre_asesor_mejor_gestion,
 	mga.gestion_fecha as fecha_mejor_gestion,
 	mga.telefono as telefono_mejor_gestion,
 	mh.indicador as mejor_gestion_hoy,
@@ -561,7 +609,7 @@ order by
 		else CONCAT('$ ', cp.valor)
 	end as valor_compromiso,
 	cp.fecha_pago as fecha_compromiso,
-	cp.nombre as nombre_usuario_compromiso,
+	case when cp.nombre is null then cp.usuario_id else cp.nombre end as nombre_usuario_compromiso,
 	case
 		when cp.fecha_pago is not null
 		and p.valortotal >= cp.valor then 'Cumplido'
@@ -590,7 +638,8 @@ order by
 	od.descuento,
 	od.valor_descuento,
 	od.valor_pago,
-	ba.estado
+	ba.estado,
+	c.qnocontact cantidad_no_contact---------------
 from
 	baseactual as ba
 left join mejorgestionactual as mga on
@@ -599,11 +648,11 @@ left join contador as c on
 	c.deudor_id = ba.deudor_id
 left join mejorgestion1 as mg1 on
 	mg1.deudor_id = ba.deudor_id
-left join mejorgestion1 as mg2 on
+left join mejorgestion2 as mg2 on
 	mg2.deudor_id = ba.deudor_id
-left join mejorgestion1 as mg3 on
+left join mejorgestion3 as mg3 on
 	mg3.deudor_id = ba.deudor_id
-left join mejorgestion1 as mg4 on
+left join mejorgestion4 as mg4 on
 	mg4.deudor_id = ba.deudor_id
 left join compromisos as cp on
 	cp.obligacion_id = ba.obligacion_id
